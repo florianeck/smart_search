@@ -1,0 +1,25 @@
+<div id="smartsearch-results-container-small">
+  <div class="bold teaser">
+      <%= "keine " if @empty %>Suchergebnisse für 
+       <%= form_for :search, :url => {:controller => "search", :action => "all", :layout => "info_overlay"}, :html => default_ajax_link(:update => FOOTER_SEARCH_RESULTS_ID).merge!(:style => "display: inline;") do |f| %>
+          <%= f.text_field :query, :value => "Suchbegriff eingeben", :value => @query, :style => "width: 25%" %>
+        <% end %>
+    </div>
+  <% @results.each do |results| %>
+    <% limit = no_limit ? results.size : 5 %>
+    <% unless results.empty? %>
+      <h3 class="result-small-header cf"><%= "Suchergebnisse in #{(results[0].class.name+'_results').to_label}" %> <%= " - Zeige #{limit} von #{results.size}" if (results.size > limit) %>  <%#= link_to_if(results.size > limit, "Alle  (#{results.size})", ) %> 
+        <% if (results.size > limit) %>
+          <span class="metainfo"><%= link_to "Zeige alle Ergebnisse", { :controller => "/search", :action => "all", :only => results[0].class.name, :query => (params[:search][:query] rescue params[:query]), :layout => params[:layout]}, default_ajax_link(:update => FOOTER_SEARCH_RESULTS_ID, :load_message => true, :class => "next-link") %></span>
+        <% elsif no_limit %>
+          <span class="metainfo"><%= link_to "Ergbnisse in allen Bereichen", { :controller => "/search", :action => "all", :query => (params[:search][:query] rescue params[:query]), :layout => params[:layout]}, default_ajax_link(:update => FOOTER_SEARCH_RESULTS_ID, :load_message => true, :class => "prev-link") %></span>
+        <% end %>
+      </h3>
+        <% results.first(limit).each do |r| %>
+          <div class="result-block-small"><%= render :partial =>  r.result_template_path, :locals => {:result => r, :small => true} %></div>
+        <% end %>
+        <div class="seperator small">&nbsp;</div>
+    <% end %>  
+  <% end %>
+ 
+</div>

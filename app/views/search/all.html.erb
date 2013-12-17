@@ -1,0 +1,15 @@
+<div class="search-">
+<%= page_title "Suchergebnisse für '#{@query}'" %>
+
+<div id="smartsearch-results-container">
+  <% @results.each do |results| %>
+    <% if results.empty? %>
+    <% else %>
+      <h3>Suchergebnisse in <%= "#{results[0].class.name}_results".to_label %> (<%= results.size %>)</h3>
+      <% results.each do |r| %>
+        <%= render :partial => r.result_template_path, :locals => {:result => r } %>
+      <% end %>
+      <%= seperator %>
+    <% end %>  
+  <% end %>  
+</div>
