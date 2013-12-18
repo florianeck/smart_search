@@ -143,9 +143,6 @@ module SmartSearch
   end  
   
   
-  class SmartSearchEngine < Rails::Engine
-  end  
-  
 end
 
 

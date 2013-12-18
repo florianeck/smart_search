@@ -29,6 +29,7 @@ ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":me
     
     create_table  :offices do |t|  
       t.string  :name
+      t.text    :search_tags
     end  
   end  
 # 
@@ -50,17 +51,23 @@ class User < ActiveRecord::Base
 end
 
 class Customer < ActiveRecord::Base
-  belongs_to :user, :class_name => "User", :foreign_key => "user_id"
-  
   smart_search :on => [:first_name, :last_name, 'user.full_name', 'user.office.name', :birthday]
+  
+  def user
+    User.find(self.user_id)
+  end  
+  
 end        
 
+# This one has not included smart-search yet
 class Office < ActiveRecord::Base
-  has_many :users, :class_name => "User", :foreign_key => "office_id"
-  
   smart_search :on => [:name, :user_names]
   
   def user_names
     self.users.map {|u| u.full_name }.join(" ")
-  end  
+  end
+  
+  def users
+    User.find_all_by_office_id(self.id)
+  end    
 end  

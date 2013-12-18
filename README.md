@@ -33,6 +33,7 @@ methods use strings.
 
 
 ## Notes
+This is the very first gem I ever made. I created it quick and dirty while working on a bigger project, so I hope u find it useful.
 Contact me with questions or ideas if you like.
 
 Florian Eck

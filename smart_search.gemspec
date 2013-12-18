@@ -7,5 +7,6 @@ Gem::Specification.new do |s|
   s.authors     = ["Florian Eck"]
   s.email       = 'it-support@friends-systems.de'
   s.files       = [Dir.glob("lib/**/*"), Dir.glob("app/**/*"), Dir.glob("config/**/*")].flatten
+  s.test_files  =   Dir.glob("test/**/*")
   s.homepage    = 'https://rubygems.org/gems/smart_search'
 end
