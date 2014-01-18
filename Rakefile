@@ -7,5 +7,7 @@ Rake::TestTask.new(:test) do |t|
   t.verbose = true
 end
 
+Bundler::GemHelper.install_tasks
+
 desc "Run tests"
 task :default => :test
