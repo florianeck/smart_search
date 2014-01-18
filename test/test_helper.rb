@@ -17,6 +17,7 @@ ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":me
       t.integer :office_id
       t.date    :birthday
       t.text    :search_tags
+      t.timestamps
     end
     
     create_table :customers do |t|
@@ -25,11 +26,13 @@ ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":me
       t.integer :user_id
       t.date    :birthday
       t.text    :search_tags
+      t.timestamps
     end
     
     create_table  :offices do |t|  
       t.string  :name
       t.text    :search_tags
+      t.timestamps
     end  
   end  
 # 

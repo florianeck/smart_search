@@ -9,11 +9,12 @@ module SmartSearch
   end  
   
   module ClassMethods
-    def smart_search(options = {:on => [], :conditions => nil, :group => nil, :order => "created_at"})
+    def smart_search(options = {:on => [], :conditions => nil, :group => nil, :order => "created_at", :force => false})
       if table_exists?
         # Check if search_tags exists
-        unless is_smart_search?
-          cattr_accessor :condition_default, :group_default, :tags, :order 
+        if !is_smart_search? || options[:force] == true
+          puts "\nAdding SmartSearch to #{self.name}: #{options.inspect}"
+          cattr_accessor :condition_default, :group_default, :tags, :order_default
           send :include, InstanceMethods
           if self.column_names.index("search_tags").nil?
             ::AddSearchTags.add_to_table(self.table_name)
@@ -25,19 +26,15 @@ module SmartSearch
               self.condition_default = options[:conditions]
             elsif !options[:conditions].nil?
               raise ArgumentError, ":conditions must be a valid SQL Query"  
-            end
+            else
+              self.condition_default = nil
+            end  
           
             if self.column_names.include?("created_at")
-              self.order = options[:order] || "created_at"
+              self.order_default = options[:order] || "created_at"
             else  
-              self.order = options[:order] || "id"
+              self.order_default = options[:order] || "id"
             end  
-
-            if options[:group].is_a?(String) && !options[:group].blank?
-              self.group_default = options[:group]
-            elsif !options[:group].nil?
-              raise ArgumentError, ":group must be a valid SQL Query"  
-            end
 
             self.tags = options[:on] || []
         end
@@ -75,6 +72,12 @@ module SmartSearch
         if options[:group]
           results = results.group(options[:group])
         end  
+        
+        if options[:order]
+          results = results.order(options[:order])
+        else
+          results = results.order(self.order_default)
+        end    
                 
         return results
       else                      
