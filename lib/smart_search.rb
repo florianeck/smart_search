@@ -13,7 +13,7 @@ module SmartSearch
       if table_exists?
         # Check if search_tags exists
         if !is_smart_search? || options[:force] == true
-          puts "\nAdding SmartSearch to #{self.name}: #{options.inspect}"
+          
           cattr_accessor :condition_default, :group_default, :tags, :order_default
           send :include, InstanceMethods
           if self.column_names.index("search_tags").nil?
