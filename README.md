@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/florianeck/smart_search.png?branch=master)](https://travis-ci.org/florianeck/smart_search)
+
 # SmartSearch
 A simple search plug-in which provides a full-text search for ActiveRecord Models. 
 It builds the search tags based upon the attributes you define in yout model.
