@@ -68,7 +68,7 @@ module SmartSearch
         
         # Similarity
         if self.enable_similarity == true
-          
+          tags.map! {|t| "search_tags LIKE '%#{t.downcase}%'"}
         else
           tags.map! {|t| "search_tags LIKE '%#{t.downcase}%'"}
         end  
