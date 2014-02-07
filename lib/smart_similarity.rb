@@ -15,8 +15,10 @@ class SmartSimilarity < ActiveRecord::Base
           # => Stuff in Here
 
       #== Konstanten
-          SIMILARITY_FACTOR = 0.85
-          SIMILARITY_METHOD = :jarowinkler
+          SIMILARITY_FACTOR = 0.8
+          SIMILARITY_METHOD_1 = :jarowinkler
+          SIMILARITY_METHOD_2 = :levenshtein
+          
           # Limit Number of similar words
           SIMILARITY_LIMIT  = 8
       #== Validation and Callbacks
@@ -42,14 +44,14 @@ class SmartSimilarity < ActiveRecord::Base
           current = words_in_db.similarities
         end  
         
-        current += prepared_text.select {|w| w != word && w.send("#{SIMILARITY_METHOD}_similar", word) >= SIMILARITY_FACTOR}
+        current += prepared_text.select {|w| w != word && self.match_words(w,word) >= SIMILARITY_FACTOR}
         
         list[word] = current.uniq
       end  
       
       # Write to Database
       list.each do |word, sims|
-        sims = sims.sort_by {|s| s.send("#{SIMILARITY_METHOD}_similar", word) }.reverse.first(SIMILARITY_LIMIT)
+        sims = sims.sort_by {|s| self.match_words(s,word) }.reverse.first(SIMILARITY_LIMIT)
         
         self.connection.execute 'UPDATE %s set similarities = "%s" where phrase = "%s"' % [self.table_name, sims.to_yaml, word] rescue nil
       end  
@@ -58,7 +60,7 @@ class SmartSimilarity < ActiveRecord::Base
     def self.add_word(word)
       words = [word]
       phrases = self.connection.select_all("SELECT phrase from smart_search_similarities").map {|r| r["phrase"] }  
-      words +=  phrases.select {|p| p.send("#{SIMILARITY_METHOD}_similar", word) >= SIMILARITY_FACTOR }
+      words +=  phrases.select {|p| self.match_words(p,word) >= SIMILARITY_FACTOR }
       
       self.create_from_text(words.join(" "))
     end
@@ -94,6 +96,12 @@ class SmartSimilarity < ActiveRecord::Base
       else
         return [word, list.first.similarities].flatten
       end    
-    end  
+    end
+    
+    def match_words(word1, word2)
+      x1 = word1.send("#{SIMILARITY_METHOD_1}_similar", word2)
+      x2 = word1.send("#{SIMILARITY_METHOD_2}_similar", word2)
+      return (x1+x2)/2.0
+    end    
   
 end 

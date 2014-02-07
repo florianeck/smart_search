@@ -70,9 +70,11 @@ module SmartSearch
         if self.enable_similarity == true
           tags.map! do |t|   
             similars = SmartSimilarity.similars(t).join("|")
+            "search_tags REGEXP '#{similars}'"
           end  
+          
         else
-          tags.map! {|t| "search_tags REGEXP '#{similars}'"}
+          tags.map! {|t| "search_tags LIKE '%#{t}%'"}
         end  
         
         
