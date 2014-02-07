@@ -85,12 +85,17 @@ Also works as expected:-)
 
 
 
-## Notes
-This is the very first gem I ever made. I created it quick and dirty while working on a bigger project, so I hope u find it useful.
-Contact me with questions or ideas if you like.
+## New Similarity Feature!
+This is still very experimental.
+THis gem now allows to build up a table with word similarities and combine your search query with other words you might be looking for.
+
+See class 'SmartSimilarty' for more infos...
+
+Documentation coming soon
 
 ### TODO
-Maybe add a search controller, and some views for quick starting...
+- Maybe add a search controller, and some views for quick starting...
+- Documentation for similarities
 
 Florian Eck
 it-support@friends-systems.de

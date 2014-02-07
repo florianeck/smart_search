@@ -68,9 +68,11 @@ module SmartSearch
         
         # Similarity
         if self.enable_similarity == true
-          tags.map! {|t| "search_tags LIKE '%#{t.downcase}%'"}
+          tags.map! do |t|   
+            similars = SmartSimilarity.similars(t).join("|")
+          end  
         else
-          tags.map! {|t| "search_tags LIKE '%#{t.downcase}%'"}
+          tags.map! {|t| "search_tags REGEXP '#{similars}'"}
         end  
         
         
@@ -108,6 +110,14 @@ module SmartSearch
         done = ((i+1).to_f/s)*100
         printf "Set search index for #{self.name}: #{done}%%                  \r"
       end  
+    end  
+    
+    # Load all search tags for this table into similarity index
+    def set_similarity_index
+      
+      search_tags_list = self.connection.select_all("SELECT search_tags from #{self.table_name}").map {|r| r["search_tags"]}
+      
+      SmartSimilarity.create_from_text(search_tags_list.join(" "))
     end  
          
   end  
