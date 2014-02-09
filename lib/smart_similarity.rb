@@ -31,14 +31,13 @@ class SmartSimilarity < ActiveRecord::Base
     def self.create_from_text(text)
       # prepare text
       prepared_text = text.downcase.split(/\b/).uniq
-      prepared_text = prepared_text.select {|w| w.size >= 3 && !w.match(/[0-9\-_<>\.\/(){}&\?"'@*+$!=,:'“„#;]/)}
+      prepared_text = prepared_text.select {|w| w.size >= 3 && !w.match(/[0-9\-_<>\.\/(){}&\?"'@*+$!=,:'#;]/)}
       list = {}
       prepared_text.each do |word|
         # Load index from database
         words_in_db = self.find_by_phrase(word)
         if words_in_db.nil?
-          self.connection.execute "INSERT INTO `#{self.table_name}` (`phrase`, `ind`) VALUES ('#{word}', '#{word[0..1]}');
-"
+          self.connection.execute "INSERT INTO `#{self.table_name}` (`phrase`, `ind`) VALUES ('#{word}', '#{word[0..1]}');"
           current = []
         else  
           current = words_in_db.similarities
