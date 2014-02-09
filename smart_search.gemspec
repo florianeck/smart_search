@@ -10,5 +10,7 @@ Gem::Specification.new do |s|
   s.test_files  =   Dir.glob("test/**/*")
   s.homepage    = 'https://rubygems.org/gems/smart_search'
   
+  s.add_dependency "rails", "~> 3.2.9"
   s.add_dependency "amatch"
+  
 end

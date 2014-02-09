@@ -6,6 +6,7 @@ It builds the search tags based upon the attributes you define in yout model.
 
 ## How to use
 First run 
+
     rake smart_search:install:migrations
 
 To use smart_search, just add the following line to your model:
