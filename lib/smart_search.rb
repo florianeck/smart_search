@@ -13,6 +13,13 @@ module SmartSearch
   end  
   
   module ClassMethods
+    # Enable SmartSearch for the current ActiveRecord model.
+    # accepts options:
+    # - :on, define which attributes to add to the search index
+    # - :conditions, define default scope for all queries made
+    # - :group, group by column
+    # - :order, order by column
+    # see readme for details
     def smart_search(options = {:on => [], :conditions => nil, :group => nil, :order => "created_at", :force => false})
       if table_exists?
         # Check if search_tags exists
@@ -47,14 +54,17 @@ module SmartSearch
       end  
     end
     
+    # Verify if SmartSearch already loaded for this model
     def is_smart_search?
       self.included_modules.include?(InstanceMethods)
     end
     
+    # defines where to look for a partial to load when displaying results for this model
     def result_template_path
       "/search/results/#{self.name.split("::").last.underscore}"
     end  
     
+    # Serach database for given search tags
     def find_by_tags(tags = "", options = {})
       if self.is_smart_search?
         
@@ -71,7 +81,7 @@ module SmartSearch
         # Similarity
         if self.enable_similarity == true
           tags.map! do |t|   
-            similars = SmartSimilarity.similars(t).join("|")
+            similars = SmartSimilarity.similars(t, :increment_counter => true).join("|")
             "search_tags REGEXP '#{similars}'"
           end  
           
@@ -106,6 +116,7 @@ module SmartSearch
       end  
     end
     
+    # reload search_tags for entire table based on the attributes defined in ':on' option passed to the 'smart_search' method
     def set_search_index
       s = self.all.size.to_f
       self.all.each_with_index do |a, i|
@@ -116,7 +127,7 @@ module SmartSearch
       end  
     end  
     
-    # Load all search tags for this table into similarity index
+    # Create all search tags for this table into similarity index
     def set_similarity_index
       
       search_tags_list = self.connection.select_all("SELECT search_tags from #{self.table_name}").map {|r| r["search_tags"]}
@@ -132,6 +143,7 @@ module SmartSearch
       self.class.result_template_path
     end  
     
+    # create search tags for this very record based on the attributes defined in ':on' option passed to the 'Class.smart_search' method
     def create_search_tags
       tags = []
       self.class.tags.each do |tag|

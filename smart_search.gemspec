@@ -1,7 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'smart_search'
-  s.version     = '0.0.6'
-  s.date        = '2013-03-11'
+  s.version     = '0.0.61'
   s.summary     = "Simple, easy to use search."
   s.description = "Adds easy to use full-text search to ActiveRecord models, based the attributes you want to search."
   s.authors     = ["Florian Eck"]
@@ -12,5 +11,7 @@ Gem::Specification.new do |s|
   
   s.add_dependency "rails", "~> 3.2.9"
   s.add_dependency "amatch"
+  s.add_dependency "spawnling"
+  s.add_dependency "friendly_extensions", "~> 0.0.61"
   
 end

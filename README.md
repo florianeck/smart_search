@@ -106,7 +106,21 @@ Added rake tasks for loading similarity data
 
 These will fill the similarity table with word similarity data.
 
-### TODO
+
+## RDoc Status
+
+    Files:       6
+
+    Classes:     5 ( 3 undocumented)
+    Modules:     3 ( 3 undocumented)
+    Constants:   4 ( 0 undocumented)
+    Attributes:  0 ( 0 undocumented)
+    Methods:    19 ( 5 undocumented)
+
+    Total:      31 (11 undocumented)
+     64.52% documented
+
+## TODO
 - Maybe add a search controller, and some views for quick starting...
 - Documentation for similarities
 

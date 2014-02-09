@@ -1,3 +1,4 @@
+# This class is used to build similiarity index
 class SmartSimilarity < ActiveRecord::Base
   #= Configuration
   serialize :similarities, Array
@@ -15,12 +16,18 @@ class SmartSimilarity < ActiveRecord::Base
           # => Stuff in Here
 
       #== Konstanten
+          # Defines the min. result of word simililarity check
           SIMILARITY_FACTOR = 0.8
+          # Defines first simililarity check method 
           SIMILARITY_METHOD_1 = :jarowinkler
+          # Defines first simililarity check method 
           SIMILARITY_METHOD_2 = :levenshtein
+          
+          # An average of both results will generated and compered with 'SIMILARITY_FACTOR'
           
           # Limit Number of similar words
           SIMILARITY_LIMIT  = 8
+          
       #== Validation and Callbacks
         #=== Validation
         
@@ -28,6 +35,8 @@ class SmartSimilarity < ActiveRecord::Base
           # => Stuff in Here
     # => END
   
+    # Create similarity data based on the given text
+    # This method is used to generate date from every source, e.g. file, url, single words etc..
     def self.create_from_text(text)
       # prepare text
       prepared_text = text.downcase.split(/\b/).uniq
@@ -56,6 +65,7 @@ class SmartSimilarity < ActiveRecord::Base
       end  
     end
     
+    # Add one simgle word to database and check if there are already similars
     def self.add_word(word)
       words = [word]
       phrases = self.connection.select_all("SELECT phrase from smart_search_similarities").map {|r| r["phrase"] }  
@@ -64,6 +74,9 @@ class SmartSimilarity < ActiveRecord::Base
       self.create_from_text(words.join(" "))
     end
     
+    # Load an entire file to the index.
+    # Best used for loading big dictionary files.
+    # Uses 'spawnling' to split the data into 8 stacks and load them simultaniously
     def self.load_file(path)
       count = %x{wc -l #{path}}.split[0].to_i
       puts "loading file: #{path}"
@@ -79,10 +92,12 @@ class SmartSimilarity < ActiveRecord::Base
       end  
     end
     
+    # Load words from website and save them to index
     def self.load_url(url)
       self.create_from_text(%x(curl #{url}))
     end  
     
+    # Loads your created query history and saves them to the index
     def self.load_from_query_history
       queries = self.connection.select_all("SELECT query from `#{::SmartSearchHistory.table_name}`").map {|r| r["query"]}.join(" ")
       self.create_from_text(queries)
@@ -90,15 +105,17 @@ class SmartSimilarity < ActiveRecord::Base
     end
     
     # Get array of similar words including orig word
-    def self.similars(word)      
-      list = self.where(:phrase => word)
-      if list.empty?
+    def self.similars(word, options = {})      
+      list = self.where(:phrase => word).first
+      if list.nil?
         return [word]
       else
-        return [word, list.first.similarities].flatten
+        self.increment_counter(:count, list.id)
+        return [word, list.similarities].flatten
       end    
     end
     
+    # Return match score for two words bases und the two defined similarity methods
     def self.match_words(word1, word2)
       x1 = word1.send("#{SIMILARITY_METHOD_1}_similar", word2)
       x2 = word1.send("#{SIMILARITY_METHOD_2}_similar", word2)

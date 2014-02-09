@@ -2,105 +2,130 @@
 
 <html>
 <head>
-<meta charset="UTF-8">
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 
 <title>class SmartSimilarity - SmartSearch</title>
 
-<link href="./fonts.css" rel="stylesheet">
-<link href="./rdoc.css" rel="stylesheet">
+<link type="text/css" media="screen" href="./rdoc.css" rel="stylesheet">
 
 <script type="text/javascript">
   var rdoc_rel_prefix = "./";
 </script>
 
-<script src="./js/jquery.js"></script>
-<script src="./js/navigation.js"></script>
-<script src="./js/search_index.js"></script>
-<script src="./js/search.js"></script>
-<script src="./js/searcher.js"></script>
-<script src="./js/darkfish.js"></script>
+<script type="text/javascript" charset="utf-8" src="./js/jquery.js"></script>
+<script type="text/javascript" charset="utf-8" src="./js/navigation.js"></script>
+<script type="text/javascript" charset="utf-8" src="./js/search_index.js"></script>
+<script type="text/javascript" charset="utf-8" src="./js/search.js"></script>
+<script type="text/javascript" charset="utf-8" src="./js/searcher.js"></script>
+<script type="text/javascript" charset="utf-8" src="./js/darkfish.js"></script>
 
 
-<body id="top" role="document" class="class">
-<nav role="navigation">
-  <div id="project-navigation">
-    <div id="home-section" role="region" title="Quick navigation" class="nav-section">
-  <h2>
-    <a href="./index.html" rel="home">Home</a>
-  </h2>
-
-  <div id="table-of-contents-navigation">
-    <a href="./table_of_contents.html#pages">Pages</a>
+<body id="top" class="class">
+<nav id="metadata">
+  <nav id="home-section" class="section">
+  <h3 class="section-header">
+    <a href="./index.html">Home</a>
     <a href="./table_of_contents.html#classes">Classes</a>
     <a href="./table_of_contents.html#methods">Methods</a>
-  </div>
-</div>
+  </h3>
+</nav>
 
-    <div id="search-section" role="search" class="project-section initially-hidden">
+
+  <nav id="search-section" class="section project-section" class="initially-hidden">
   <form action="#" method="get" accept-charset="utf-8">
-    <div id="search-field-wrapper">
-      <input id="search-field" role="combobox" aria-label="Search"
-             aria-autocomplete="list" aria-controls="search-results"
-             type="text" name="search" placeholder="Search" spellcheck="false"
+    <h3 class="section-header">
+      <input type="text" name="search" placeholder="Search" id="search-field"
              title="Type to search, Up and Down to navigate, Enter to load">
-    </div>
-
-    <ul id="search-results" aria-label="Search Results"
-        aria-busy="false" aria-expanded="false"
-        aria-atomic="false" class="initially-hidden"></ul>
+    </h3>
   </form>
-</div>
 
+  <ul id="search-results" class="initially-hidden"></ul>
+</nav>
+
+
+  <div id="file-metadata">
+    <nav id="file-list-section" class="section">
+  <h3 class="section-header">Defined In</h3>
+  <ul>
+    <li>lib/smart_similarity.rb
+  </ul>
+</nav>
+
+    
   </div>
-
-  
 
   <div id="class-metadata">
     
-    <div id="parent-class-section" class="nav-section">
-  <h3>Parent</h3>
-
+    <nav id="parent-class-section" class="section">
+  <h3 class="section-header">Parent</h3>
   
   <p class="link">ActiveRecord::Base
   
-</div>
+</nav>
 
-    
     
     <!-- Method Quickref -->
-<div id="method-list-section" class="nav-section">
-  <h3>Methods</h3>
+<nav id="method-list-section" class="section">
+  <h3 class="section-header">Methods</h3>
 
-  <ul class="link-list" role="directory">
+  <ul class="link-list">
     
-    <li ><a href="#method-c-add_word">::add_word</a>
+    <li><a href="#method-c-add_word">::add_word</a>
     
-    <li ><a href="#method-c-create_from_text">::create_from_text</a>
+    <li><a href="#method-c-create_from_text">::create_from_text</a>
     
-    <li ><a href="#method-c-load_file">::load_file</a>
+    <li><a href="#method-c-load_file">::load_file</a>
     
-    <li ><a href="#method-c-load_from_query_history">::load_from_query_history</a>
+    <li><a href="#method-c-load_from_query_history">::load_from_query_history</a>
     
-    <li ><a href="#method-c-load_url">::load_url</a>
+    <li><a href="#method-c-load_url">::load_url</a>
     
-    <li ><a href="#method-c-match_words">::match_words</a>
+    <li><a href="#method-c-match_words">::match_words</a>
     
-    <li ><a href="#method-c-similars">::similars</a>
+    <li><a href="#method-c-similars">::similars</a>
     
   </ul>
-</div>
+</nav>
+
+  </div>
+
+  <div id="project-metadata">
+    
+    <nav id="classindex-section" class="section project-section">
+  <h3 class="section-header">Class and Module Index</h3>
+
+  <ul class="link-list">
+  
+    <li><a href="./SmartSearch.html">SmartSearch</a>
+  
+    <li><a href="./SmartSearch/ClassMethods.html">SmartSearch::ClassMethods</a>
+  
+    <li><a href="./SmartSearch/Config.html">SmartSearch::Config</a>
+  
+    <li><a href="./SmartSearch/InstanceMethods.html">SmartSearch::InstanceMethods</a>
+  
+    <li><a href="./SmartSearch/SmartSearchEngine.html">SmartSearch::SmartSearchEngine</a>
+  
+    <li><a href="./AddSearchTags.html">AddSearchTags</a>
+  
+    <li><a href="./SmartSearchHistory.html">SmartSearchHistory</a>
+  
+    <li><a href="./SmartSimilarity.html">SmartSimilarity</a>
+  
+  </ul>
+</nav>
 
   </div>
 </nav>
 
-<main role="main" aria-labelledby="class-SmartSimilarity">
-  <h1 id="class-SmartSimilarity" class="class">
-    class SmartSimilarity
-  </h1>
+<div id="documentation">
+  <h1 class="class">class SmartSimilarity</h1>
 
-  <section class="description">
+  <div id="description" class="description">
     
-  </section>
+<p>This class is used to build similiarity index</p>
+
+  </div><!-- description -->
 
   
   
@@ -111,30 +136,31 @@
     
 
     
-    <section class="constants-list">
-      <header>
-        <h3>Constants</h3>
-      </header>
+    <!-- Constants -->
+    <section id="constants-list" class="section">
+      <h3 class="section-header">Constants</h3>
       <dl>
       
         <dt id="SIMILARITY_FACTOR">SIMILARITY_FACTOR
         
-        <dd><h2 id="label-Konstanten">Konstanten<span><a href="#label-Konstanten">&para;</a> <a href="#documentation">&uarr;</a></span></h2>
+        <dd class="description"><h2 id="label-Konstanten">Konstanten</h2>
+
+<pre>Defines the min. result of word simililarity check</pre>
         
       
         <dt id="SIMILARITY_LIMIT">SIMILARITY_LIMIT
         
-        <dd><p>Limit Number of similar words</p>
+        <dd class="description"><p>Limit Number of similar words</p>
         
       
         <dt id="SIMILARITY_METHOD_1">SIMILARITY_METHOD_1
         
-        <dd>
+        <dd class="description"><p>Defines first simililarity check method</p>
         
       
         <dt id="SIMILARITY_METHOD_2">SIMILARITY_METHOD_2
         
-        <dd>
+        <dd class="description"><p>Defines first simililarity check method</p>
         
       
       </dl>
@@ -143,11 +169,10 @@
 
     
 
+    <!-- Methods -->
     
-     <section id="public-class-5Buntitled-5D-method-details" class="method-section">
-       <header>
-         <h3>Public Class Methods</h3>
-       </header>
+     <section id="public-class-5Buntitled-5D-method-details" class="method-section section">
+      <h3 class="section-header">Public Class Methods</h3>
 
     
       <div id="method-c-add_word" class="method-detail ">
@@ -155,21 +180,18 @@
         <div class="method-heading">
           <span class="method-name">add_word</span><span
             class="method-args">(word)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
         
 
         <div class="method-description">
           
-          
-          
+          <p>Add one simgle word to database and check if there are already similars</p>
           
 
           
           <div class="method-source-code" id="add_word-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 60</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 69</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">add_word</span>(<span class="ruby-identifier">word</span>)
   <span class="ruby-identifier">words</span> = [<span class="ruby-identifier">word</span>]
   <span class="ruby-identifier">phrases</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">select_all</span>(<span class="ruby-string">&quot;SELECT phrase from smart_search_similarities&quot;</span>).<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>[<span class="ruby-string">&quot;phrase&quot;</span>] }  
@@ -177,14 +199,14 @@
   
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">create_from_text</span>(<span class="ruby-identifier">words</span>.<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot; &quot;</span>))
 <span class="ruby-keyword">end</span></pre>
-          </div>
+          </div><!-- add_word-source -->
           
         </div>
 
         
 
         
-      </div>
+      </div><!-- add_word-method -->
 
     
       <div id="method-c-create_from_text" class="method-detail ">
@@ -192,61 +214,54 @@
         <div class="method-heading">
           <span class="method-name">create_from_text</span><span
             class="method-args">(text)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
         
 
         <div class="method-description">
           
-          <h3 id="method-c-create_from_text-label-Callbacks">Callbacks<span><a href="#method-c-create_from_text-label-Callbacks">&para;</a> <a href="#documentation">&uarr;</a></span></h3>
-
-<pre class="ruby">=<span class="ruby-operator">&gt;</span> <span class="ruby-constant">Stuff</span> <span class="ruby-keyword">in</span> <span class="ruby-constant">Here</span>
-=<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">END</span>
-</pre>
-          
+          <p>Create similarity data based on the given text This method is used to
+generate date from every source, e.g. file, url, single words etc..</p>
           
 
           
           <div class="method-source-code" id="create_from_text-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 31</span>
-    <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">create_from_text</span>(<span class="ruby-identifier">text</span>)
-      <span class="ruby-comment"># prepare text</span>
-      <span class="ruby-identifier">prepared_text</span> = <span class="ruby-identifier">text</span>.<span class="ruby-identifier">downcase</span>.<span class="ruby-identifier">split</span>(<span class="ruby-regexp">/\b/</span>).<span class="ruby-identifier">uniq</span>
-      <span class="ruby-identifier">prepared_text</span> = <span class="ruby-identifier">prepared_text</span>.<span class="ruby-identifier">select</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">w</span><span class="ruby-operator">|</span> <span class="ruby-identifier">w</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-value">3</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">w</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">/[0-9\-_&lt;&gt;\.\/(){}&amp;\?&quot;&#39;@*+$!=,:&#39;“„#;]/</span>)}
-      <span class="ruby-identifier">list</span> = {}
-      <span class="ruby-identifier">prepared_text</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">word</span><span class="ruby-operator">|</span>
-        <span class="ruby-comment"># Load index from database</span>
-        <span class="ruby-identifier">words_in_db</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">find_by_phrase</span>(<span class="ruby-identifier">word</span>)
-        <span class="ruby-keyword">if</span> <span class="ruby-identifier">words_in_db</span>.<span class="ruby-identifier">nil?</span>
-          <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">execute</span> <span class="ruby-node">&quot;INSERT INTO `#{self.table_name}` (`phrase`, `ind`) VALUES (&#39;#{word}&#39;, &#39;#{word[0..1]}&#39;);
-&quot;</span>
-          <span class="ruby-identifier">current</span> = []
-        <span class="ruby-keyword">else</span>  
-          <span class="ruby-identifier">current</span> = <span class="ruby-identifier">words_in_db</span>.<span class="ruby-identifier">similarities</span>
-        <span class="ruby-keyword">end</span>  
-        
-        <span class="ruby-identifier">current</span> <span class="ruby-operator">+=</span> <span class="ruby-identifier">prepared_text</span>.<span class="ruby-identifier">select</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">w</span><span class="ruby-operator">|</span> <span class="ruby-identifier">w</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">word</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">match_words</span>(<span class="ruby-identifier">w</span>,<span class="ruby-identifier">word</span>) <span class="ruby-operator">&gt;=</span> <span class="ruby-constant">SIMILARITY_FACTOR</span>}
-        
-        <span class="ruby-identifier">list</span>[<span class="ruby-identifier">word</span>] = <span class="ruby-identifier">current</span>.<span class="ruby-identifier">uniq</span>
-      <span class="ruby-keyword">end</span>  
-      
-      <span class="ruby-comment"># Write to Database</span>
-      <span class="ruby-identifier">list</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">word</span>, <span class="ruby-identifier">sims</span><span class="ruby-operator">|</span>
-        <span class="ruby-identifier">sims</span> = <span class="ruby-identifier">sims</span>.<span class="ruby-identifier">sort_by</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">s</span><span class="ruby-operator">|</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">match_words</span>(<span class="ruby-identifier">s</span>,<span class="ruby-identifier">word</span>) }.<span class="ruby-identifier">reverse</span>.<span class="ruby-identifier">first</span>(<span class="ruby-constant">SIMILARITY_LIMIT</span>)
-        
-        <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">execute</span> <span class="ruby-string">&#39;UPDATE %s set similarities = &quot;%s&quot; where phrase = &quot;%s&quot;&#39;</span> <span class="ruby-operator">%</span> [<span class="ruby-keyword">self</span>.<span class="ruby-identifier">table_name</span>, <span class="ruby-identifier">sims</span>.<span class="ruby-identifier">to_yaml</span>, <span class="ruby-identifier">word</span>] <span class="ruby-keyword">rescue</span> <span class="ruby-keyword">nil</span>
-      <span class="ruby-keyword">end</span>  
-    <span class="ruby-keyword">end</span></pre>
-          </div>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 40</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">create_from_text</span>(<span class="ruby-identifier">text</span>)
+  <span class="ruby-comment"># prepare text</span>
+  <span class="ruby-identifier">prepared_text</span> = <span class="ruby-identifier">text</span>.<span class="ruby-identifier">downcase</span>.<span class="ruby-identifier">split</span>(<span class="ruby-regexp">/\b/</span>).<span class="ruby-identifier">uniq</span>
+  <span class="ruby-identifier">prepared_text</span> = <span class="ruby-identifier">prepared_text</span>.<span class="ruby-identifier">select</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">w</span><span class="ruby-operator">|</span> <span class="ruby-identifier">w</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-value">3</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">w</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">/[0-9\-_&lt;&gt;\.\/(){}&amp;\?&quot;&#39;@*+$!=,:&#39;#;]/</span>)}
+  <span class="ruby-identifier">list</span> = {}
+  <span class="ruby-identifier">prepared_text</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">word</span><span class="ruby-operator">|</span>
+    <span class="ruby-comment"># Load index from database</span>
+    <span class="ruby-identifier">words_in_db</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">find_by_phrase</span>(<span class="ruby-identifier">word</span>)
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">words_in_db</span>.<span class="ruby-identifier">nil?</span>
+      <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">execute</span> <span class="ruby-node">&quot;INSERT INTO `#{self.table_name}` (`phrase`, `ind`) VALUES (&#39;#{word}&#39;, &#39;#{word[0..1]}&#39;);&quot;</span>
+      <span class="ruby-identifier">current</span> = []
+    <span class="ruby-keyword">else</span>  
+      <span class="ruby-identifier">current</span> = <span class="ruby-identifier">words_in_db</span>.<span class="ruby-identifier">similarities</span>
+    <span class="ruby-keyword">end</span>  
+    
+    <span class="ruby-identifier">current</span> <span class="ruby-operator">+=</span> <span class="ruby-identifier">prepared_text</span>.<span class="ruby-identifier">select</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">w</span><span class="ruby-operator">|</span> <span class="ruby-identifier">w</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">word</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">match_words</span>(<span class="ruby-identifier">w</span>,<span class="ruby-identifier">word</span>) <span class="ruby-operator">&gt;=</span> <span class="ruby-constant">SIMILARITY_FACTOR</span>}
+    
+    <span class="ruby-identifier">list</span>[<span class="ruby-identifier">word</span>] = <span class="ruby-identifier">current</span>.<span class="ruby-identifier">uniq</span>
+  <span class="ruby-keyword">end</span>  
+  
+  <span class="ruby-comment"># Write to Database</span>
+  <span class="ruby-identifier">list</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">word</span>, <span class="ruby-identifier">sims</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">sims</span> = <span class="ruby-identifier">sims</span>.<span class="ruby-identifier">sort_by</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">s</span><span class="ruby-operator">|</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">match_words</span>(<span class="ruby-identifier">s</span>,<span class="ruby-identifier">word</span>) }.<span class="ruby-identifier">reverse</span>.<span class="ruby-identifier">first</span>(<span class="ruby-constant">SIMILARITY_LIMIT</span>)
+    
+    <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">execute</span> <span class="ruby-string">&#39;UPDATE %s set similarities = &quot;%s&quot; where phrase = &quot;%s&quot;&#39;</span> <span class="ruby-operator">%</span> [<span class="ruby-keyword">self</span>.<span class="ruby-identifier">table_name</span>, <span class="ruby-identifier">sims</span>.<span class="ruby-identifier">to_yaml</span>, <span class="ruby-identifier">word</span>] <span class="ruby-keyword">rescue</span> <span class="ruby-keyword">nil</span>
+  <span class="ruby-keyword">end</span>  
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- create_from_text-source -->
           
         </div>
 
         
 
         
-      </div>
+      </div><!-- create_from_text-method -->
 
     
       <div id="method-c-load_file" class="method-detail ">
@@ -254,21 +269,20 @@
         <div class="method-heading">
           <span class="method-name">load_file</span><span
             class="method-args">(path)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
         
 
         <div class="method-description">
           
-          
-          
+          <p>Load an entire file to the index. Best used for loading big dictionary
+files. Uses &#39;spawnling&#39; to split the data into 8 stacks and load
+them simultaniously</p>
           
 
           
           <div class="method-source-code" id="load_file-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 68</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 80</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">load_file</span>(<span class="ruby-identifier">path</span>)
   <span class="ruby-identifier">count</span> = <span class="ruby-node">%x{wc -l #{path}}</span>.<span class="ruby-identifier">split</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">to_i</span>
   <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;loading file: #{path}&quot;</span>
@@ -283,14 +297,14 @@
     <span class="ruby-keyword">end</span>  
   <span class="ruby-keyword">end</span>  
 <span class="ruby-keyword">end</span></pre>
-          </div>
+          </div><!-- load_file-source -->
           
         </div>
 
         
 
         
-      </div>
+      </div><!-- load_file-method -->
 
     
       <div id="method-c-load_from_query_history" class="method-detail ">
@@ -298,34 +312,31 @@
         <div class="method-heading">
           <span class="method-name">load_from_query_history</span><span
             class="method-args">()</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
         
 
         <div class="method-description">
           
-          
-          
+          <p>Loads your created query history and saves them to the index</p>
           
 
           
           <div class="method-source-code" id="load_from_query_history-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 87</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 101</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">load_from_query_history</span>
   <span class="ruby-identifier">queries</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">select_all</span>(<span class="ruby-node">&quot;SELECT query from `#{::SmartSearchHistory.table_name}`&quot;</span>).<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>[<span class="ruby-string">&quot;query&quot;</span>]}.<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot; &quot;</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">create_from_text</span>(<span class="ruby-identifier">queries</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">execute</span>(<span class="ruby-node">&quot;TRUNCATE `#{::SmartSearchHistory.table_name}`&quot;</span>)
 <span class="ruby-keyword">end</span></pre>
-          </div>
+          </div><!-- load_from_query_history-source -->
           
         </div>
 
         
 
         
-      </div>
+      </div><!-- load_from_query_history-method -->
 
     
       <div id="method-c-load_url" class="method-detail ">
@@ -333,32 +344,29 @@
         <div class="method-heading">
           <span class="method-name">load_url</span><span
             class="method-args">(url)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
         
 
         <div class="method-description">
           
-          
-          
+          <p>Load words from website and save them to index</p>
           
 
           
           <div class="method-source-code" id="load_url-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 83</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 96</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">load_url</span>(<span class="ruby-identifier">url</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">create_from_text</span>(<span class="ruby-node">%x(curl #{url})</span>)
 <span class="ruby-keyword">end</span></pre>
-          </div>
+          </div><!-- load_url-source -->
           
         </div>
 
         
 
         
-      </div>
+      </div><!-- load_url-method -->
 
     
       <div id="method-c-match_words" class="method-detail ">
@@ -366,44 +374,40 @@
         <div class="method-heading">
           <span class="method-name">match_words</span><span
             class="method-args">(word1, word2)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
         
 
         <div class="method-description">
           
-          
-          
+          <p>Return match score for two words bases und the two defined similarity
+methods</p>
           
 
           
           <div class="method-source-code" id="match_words-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 103</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 119</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">match_words</span>(<span class="ruby-identifier">word1</span>, <span class="ruby-identifier">word2</span>)
   <span class="ruby-identifier">x1</span> = <span class="ruby-identifier">word1</span>.<span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;#{SIMILARITY_METHOD_1}_similar&quot;</span>, <span class="ruby-identifier">word2</span>)
   <span class="ruby-identifier">x2</span> = <span class="ruby-identifier">word1</span>.<span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;#{SIMILARITY_METHOD_2}_similar&quot;</span>, <span class="ruby-identifier">word2</span>)
   <span class="ruby-keyword">return</span> (<span class="ruby-identifier">x1</span><span class="ruby-operator">+</span><span class="ruby-identifier">x2</span>)<span class="ruby-operator">/</span><span class="ruby-value">2.0</span>
 <span class="ruby-keyword">end</span></pre>
-          </div>
+          </div><!-- match_words-source -->
           
         </div>
 
         
 
         
-      </div>
+      </div><!-- match_words-method -->
 
     
       <div id="method-c-similars" class="method-detail ">
         
         <div class="method-heading">
           <span class="method-name">similars</span><span
-            class="method-args">(word)</span>
-          
+            class="method-args">(word, options = {})</span>
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
         
 
@@ -411,38 +415,39 @@
           
           <p>Get array of similar words including orig word</p>
           
-          
 
           
           <div class="method-source-code" id="similars-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 94</span>
-<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">similars</span>(<span class="ruby-identifier">word</span>)      
-  <span class="ruby-identifier">list</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:phrase</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">word</span>)
-  <span class="ruby-keyword">if</span> <span class="ruby-identifier">list</span>.<span class="ruby-identifier">empty?</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 108</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">similars</span>(<span class="ruby-identifier">word</span>, <span class="ruby-identifier">options</span> = {})      
+  <span class="ruby-identifier">list</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:phrase</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">word</span>).<span class="ruby-identifier">first</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">list</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">return</span> [<span class="ruby-identifier">word</span>]
   <span class="ruby-keyword">else</span>
-    <span class="ruby-keyword">return</span> [<span class="ruby-identifier">word</span>, <span class="ruby-identifier">list</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">similarities</span>].<span class="ruby-identifier">flatten</span>
+    <span class="ruby-keyword">self</span>.<span class="ruby-identifier">increment_counter</span>(<span class="ruby-value">:count</span>, <span class="ruby-identifier">list</span>.<span class="ruby-identifier">id</span>)
+    <span class="ruby-keyword">return</span> [<span class="ruby-identifier">word</span>, <span class="ruby-identifier">list</span>.<span class="ruby-identifier">similarities</span>].<span class="ruby-identifier">flatten</span>
   <span class="ruby-keyword">end</span>    
 <span class="ruby-keyword">end</span></pre>
-          </div>
+          </div><!-- similars-source -->
           
         </div>
 
         
 
         
-      </div>
+      </div><!-- similars-method -->
 
     
-    </section>
+    </section><!-- public-class-method-details -->
   
-  </section>
-</main>
+  </section><!-- 5Buntitled-5D -->
+
+</div><!-- documentation -->
 
 
-<footer id="validator-badges" role="contentinfo">
-  <p><a href="http://validator.w3.org/check/referer">Validate</a>
-  <p>Generated by <a href="http://rdoc.rubyforge.org">RDoc</a> 4.1.1.
-  <p>Based on <a href="http://deveiate.org/projects/Darkfish-Rdoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
+<footer id="validator-badges">
+  <p><a href="http://validator.w3.org/check/referer">[Validate]</a>
+  <p>Generated by <a href="https://github.com/rdoc/rdoc">RDoc</a> 3.12.2.
+  <p>Generated with the <a href="http://deveiate.org/projects/Darkfish-Rdoc/">Darkfish Rdoc Generator</a> 3.
 </footer>
 
