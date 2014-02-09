@@ -67,7 +67,9 @@ class SmartSimilarity < ActiveRecord::Base
     
     def self.load_file(path)
       count = %x{wc -l #{path}}.split[0].to_i
-      File.open(path, "r").to_a.seperate(12).each_with_index do |stack, si| 
+      puts "loading file: #{path}"
+      puts "=> #{count} rows"
+      File.open(path, "r").to_a.seperate([8,count].min).each_with_index do |stack, si| 
         Spawnling.new(:argv => "sim-file-#{si}") do
           QueryLog.info "sim-file-#{si}"
           stack.each_with_index do |l,i|
@@ -98,7 +100,7 @@ class SmartSimilarity < ActiveRecord::Base
       end    
     end
     
-    def match_words(word1, word2)
+    def self.match_words(word1, word2)
       x1 = word1.send("#{SIMILARITY_METHOD_1}_similar", word2)
       x2 = word1.send("#{SIMILARITY_METHOD_2}_similar", word2)
       return (x1+x2)/2.0

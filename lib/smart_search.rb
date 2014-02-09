@@ -4,6 +4,8 @@ require "smart_similarity"
 require "smart_search_history"
 require "add_search_tags"
 
+require "smart_search/smart_search_engine"
+
 module SmartSearch
   
   def self.included(base)
@@ -107,7 +109,7 @@ module SmartSearch
     def set_search_index
       s = self.all.size.to_f
       self.all.each_with_index do |a, i|
-        a.create_search_tags
+        a.create_search_tags rescue nil
         a.send(:update_without_callbacks)
         done = ((i+1).to_f/s)*100
         printf "Set search index for #{self.name}: #{done}%%                  \r"

@@ -5,6 +5,9 @@ A simple search plug-in which provides a full-text search for ActiveRecord Model
 It builds the search tags based upon the attributes you define in yout model.
 
 ## How to use
+First run 
+    rake smart_search:install:migrations
+
 To use smart_search, just add the following line to your model:
 
     smart_search :on => [- define attributes here-]
@@ -93,9 +96,18 @@ See class 'SmartSimilarty' for more infos...
 
 Documentation coming soon
 
+Added rake tasks for loading similarity data
+
+    rake smart_search:similarity_from_file           # Load similarity data from file - Use FILE=path/to/file to specify file
+    rake smart_search:similarity_from_query_history  # Load similarity data from query history
+    rake smart_search:similarity_from_url            # Load similarity data from url - Use URL=http://.../ to specify url - Requires 'curl'
+
+These will fill the similarity table with word similarity data.
+
 ### TODO
 - Maybe add a search controller, and some views for quick starting...
 - Documentation for similarities
+
 
 Florian Eck
 it-support@friends-systems.de
