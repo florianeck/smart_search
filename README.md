@@ -22,6 +22,7 @@ Find entries by using:
     
 ### Adding default conditions
 To add default conditions:
+
     smart_search :on => [- define attributes here-], :conditions => "- SQL Conditions here -"
 
 Will only find matching tags and the given condition    
