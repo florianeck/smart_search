@@ -37,7 +37,7 @@ module SmartSearch
             ::AddSearchTags.add_to_table(self.table_name)
           end
             self.send(:before_save, :create_search_tags)
-            
+            self.send(:after_destroy, :create_search_tags)
             self.enable_similarity ||= true
             
             # options zuweisen
@@ -95,7 +95,7 @@ module SmartSearch
           tags.map! {|t| "search_tags LIKE '%#{t}%'"}
         end  
         
-        
+        # Load ranking from Search tags
         result_ids = SmartSearchTag.connection.select_all("select entry_id, sum(boost) from smart_search_tags where `table_name`= '#{self.table_name}' and 
         (#{tags.join(' AND ')}) group by entry_id order by sum(boost) DESC").map {|r| r["entry_id"]}
         
@@ -136,10 +136,10 @@ module SmartSearch
       end  
     end  
     
-    # Create all search tags for this table into similarity index
+    # Load all search tags for this table into similarity index
     def set_similarity_index
       
-      search_tags_list = self.connection.select_all("SELECT search_tags from #{self.table_name}").map {|r| r["search_tags"]}
+      search_tags_list = self.connection.select_all("SELECT search_tags from #{SmartSearchTag.table_name} where `table_name` = #{self.table_name}").map {|r| r["search_tags"]}
       
       SmartSimilarity.create_from_text(search_tags_list.join(" "))
     end  
@@ -166,7 +166,7 @@ module SmartSearch
         end    
         
         if tag[:field_name].is_a?(Symbol)
-          tag[:search_tags] << self.send(tag[:field_name])
+          tag[:search_tags] << self.send(tag[:field_name]).to_s
         elsif tag[:field_name].is_a?(String)
           tag_methods = tag[:field_name].split(".")  
           tagx = self.send(tag_methods[0])
@@ -180,14 +180,19 @@ module SmartSearch
         tags << tag
       end
       
-      SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}")
+      
+      self.clear_search_tags
         
       tags.each do |t|
         SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id))
       end  
       
       # self.search_tags = "#{tags.map {|t| t[:search_tags]}.join(" ")}"
-    end  
+    end
+    
+    def clear_search_tags
+      SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}")
+    end    
     
   end    
         
