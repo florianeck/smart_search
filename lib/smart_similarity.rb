@@ -110,7 +110,7 @@ class SmartSimilarity < ActiveRecord::Base
       if list.nil?
         return [word]
       else
-        self.increment_counter(:count, list.id)
+        self.connection.execute("UPDATE `smart_search_similarities` SET `count` = #{list.count+1} where `smart_search_similarities`.`phrase` = '#{list.phrase}'")
         return [word, list.similarities].flatten
       end    
     end

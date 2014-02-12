@@ -1,10 +1,16 @@
 # -*- encoding : utf-8 -*-
+require "rails"
+
 require "smart_search"
+require "smart_search/smart_search_engine"
+
 require "smart_similarity"
 require "smart_search_history"
+require "smart_search_tag"
 require "add_search_tags"
 
-require "smart_search/smart_search_engine"
+
+
 
 module SmartSearch
   
@@ -32,7 +38,7 @@ module SmartSearch
           end
             self.send(:before_save, :create_search_tags)
             
-            self.enable_similarity = true
+            self.enable_similarity ||= true
             
             # options zuweisen
             if options[:conditions].is_a?(String) && !options[:conditions].blank?
@@ -145,29 +151,44 @@ module SmartSearch
     
     # create search tags for this very record based on the attributes defined in ':on' option passed to the 'Class.smart_search' method
     def create_search_tags
-      tags = []
+      tags      = []
+      
       self.class.tags.each do |tag|
-        if tag.is_a?(Symbol)
-          tags << self.send(tag)
-        elsif tag.is_a?(String)
-          tag_methods = tag.split(".")  
+        
+        if !tag.is_a?(Hash)
+          tag = {:field_name => tag, :boost => 1, :search_tags => ""} 
+        else
+          tag[:search_tags] = ""
+          tag[:boost] ||= 1
+        end    
+        
+        if tag[:field_name].is_a?(Symbol)
+          tag[:search_tags] << self.send(tag[:field_name])
+        elsif tag[:field_name].is_a?(String)
+          tag_methods = tag[:field_name].split(".")  
           tagx = self.send(tag_methods[0])
           tag_methods[1..-1].each do |x|
             tagx = tagx.send(x) rescue ""
           end
-          tags << tagx  
-        end  
+          tag[:search_tags] << tagx.to_s  
+        end
+        
+        tag[:search_tags] = tag[:search_tags].split(" ").uniq.join(" ").downcase   
+        tags << tag
       end
-      searchtags = tags.join(" ").split(" ")  
-      searchtags = searchtags.uniq.join(" ")
-      search_tags_min = searchtags.gsub(" ", "").downcase
       
-      self.search_tags = "#{searchtags.downcase}"
+      SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}")
+        
+      tags.each do |t|
+        SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id))
+      end  
+      
+      self.search_tags = "#{tags.map {|t| t[:search_tags]}.join(" ")}"
     end  
     
   end    
         
-  
+
   class Config
     
     cattr_accessor  :search_models

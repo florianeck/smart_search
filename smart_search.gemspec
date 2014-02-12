@@ -13,5 +13,6 @@ Gem::Specification.new do |s|
   s.add_dependency "amatch"
   s.add_dependency "spawnling"
   s.add_dependency "friendly_extensions", "~> 0.0.61"
-  
+  s.add_dependency "mysql2" 
+  s.add_dependency "sqlite3" 
 end

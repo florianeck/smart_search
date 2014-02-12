@@ -6,6 +6,8 @@ class SmartSearchTest < Test::Unit::TestCase
     office_name = "Office1"
     office = Office.create(:name => office_name)
     
+    Office.enable_similarity = false
+    
     assert_equal office, Office.find_by_tags(office_name).first
   end
   
@@ -36,6 +38,7 @@ class SmartSearchTest < Test::Unit::TestCase
     office_id_nok = 5
     
     User.smart_search :on => [:full_name], :conditions => "office_id <> #{office_id_nok}", :force => true
+    User.enable_similarity = false
     
     user    = User.create(:first_name => "Unknown", :last_name => "User", :office_id => office_id_nok)
     user    = User.create(:first_name => "Public", :last_name => "User", :office_id => office_id_ok)
@@ -46,6 +49,7 @@ class SmartSearchTest < Test::Unit::TestCase
   
   def test_should_use_default_order_and_order_should_be_overwriteable
     User.smart_search :on => [:full_name], :order => :first_name, :force => true
+    User.enable_similarity = false
     
     user_c    = User.create(:first_name => "C", :last_name => "Test1")
     user_a    = User.create(:first_name => "A", :last_name => "Test3")
@@ -65,9 +69,7 @@ class SmartSearchTest < Test::Unit::TestCase
     user_b    = User.create(:first_name => "B", :last_name => "Next2")
     
     assert_equal [],  User.find_by_tags("A").where("last_name <> 'Bah' ")
-  end  
-  
-  
+  end 
   
   
 end  
