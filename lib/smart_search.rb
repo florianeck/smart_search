@@ -37,7 +37,7 @@ module SmartSearch
             ::AddSearchTags.add_to_table(self.table_name)
           end
             self.send(:before_save, :create_search_tags)
-            self.send(:after_destroy, :create_search_tags)
+            self.send(:before_destroy, :create_search_tags)
             self.enable_similarity ||= true
             
             # options zuweisen
@@ -96,8 +96,10 @@ module SmartSearch
         end  
         
         # Load ranking from Search tags
-        result_ids = SmartSearchTag.connection.select_all("select entry_id, sum(boost) from smart_search_tags where `table_name`= '#{self.table_name}' and 
-        (#{tags.join(' AND ')}) group by entry_id order by sum(boost) DESC").map {|r| r["entry_id"]}
+        result_ids = SmartSearchTag.connection.select_all("select entry_id, sum(boost), group_concat(search_tags) as grouped_tags 
+        from smart_search_tags where `table_name`= '#{self.table_name}' and 
+        
+        (#{tags.join(' OR ')}) group by entry_id having (#{tags.join(' AND ').gsub('search_tags', 'grouped_tags')}) order by sum(boost) DESC").map {|r| r["entry_id"]}
         
         results =  self.where(:id => result_ids)
         
@@ -185,13 +187,15 @@ module SmartSearch
         
       tags.each do |t|
         SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id))
-      end  
+      end
+   
       
-      # self.search_tags = "#{tags.map {|t| t[:search_tags]}.join(" ")}"
     end
     
     def clear_search_tags
-      SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}")
+      if !self.id.nil?
+        SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}")
+      end  
     end    
     
   end    
