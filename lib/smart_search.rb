@@ -96,7 +96,10 @@ module SmartSearch
         end  
         
         
-        results =  self.where("(#{tags.join(' AND ')})")
+        result_ids = SmartSearchTag.connection.select_all("select entry_id, sum(boost) from smart_search_tags where `table_name`= '#{self.table_name}' and 
+        (#{tags.join(' AND ')}) group by entry_id order by sum(boost) DESC").map {|r| r["entry_id"]}
+        
+        results =  self.where(:id => result_ids)
         
         if options[:conditions]
           results = results.where(options[:conditions])
@@ -183,7 +186,7 @@ module SmartSearch
         SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id))
       end  
       
-      self.search_tags = "#{tags.map {|t| t[:search_tags]}.join(" ")}"
+      # self.search_tags = "#{tags.map {|t| t[:search_tags]}.join(" ")}"
     end  
     
   end    
