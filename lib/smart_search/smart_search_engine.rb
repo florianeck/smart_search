@@ -4,6 +4,5 @@ module SmartSearch
     isolate_namespace SmartSearch
     require "friendly_extensions"
     require "amatch"
-    require "spawnling"
   end  
 end  
