@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name        = 'smart_search'
   s.version     = '0.0.61'
-  s.summary     = "Simple, easy to use search."
-  s.description = "Adds easy to use full-text search to ActiveRecord models, based the attributes you want to search."
+  s.summary     = "Simple, easy to use search MySQL based search for ActiveRecord"
+  s.description = "SmartSearch adds full-text search functions to ActiveRecord, including search for similiar words. Its fast, simple, and works with almost zero-config!"
   s.authors     = ["Florian Eck"]
   s.email       = 'it-support@friends-systems.de'
   s.files       = [Dir.glob("lib/**/*"), Dir.glob("app/**/*"), Dir.glob("config/**/*")].flatten

@@ -3,7 +3,6 @@ class SmartSimilarity < ActiveRecord::Base
   #= Configuration
   serialize :similarities, Array
   self.table_name = "smart_search_similarities"
-  require "amatch"
   
       #== Associations
           # => Stuff in Here
@@ -28,6 +27,8 @@ class SmartSimilarity < ActiveRecord::Base
           # Limit Number of similar words
           SIMILARITY_LIMIT  = 8
           
+          SPLITTING_REGEXP = /\b/
+          
       #== Validation and Callbacks
         #=== Validation
         
@@ -39,7 +40,7 @@ class SmartSimilarity < ActiveRecord::Base
     # This method is used to generate date from every source, e.g. file, url, single words etc..
     def self.create_from_text(text)
       # prepare text
-      prepared_text = text.downcase.split(/\b/).uniq
+      prepared_text = text.downcase.split(SPLITTING_REGEXP).uniq
       prepared_text = prepared_text.select {|w| w.size >= 3 && !w.match(/[0-9\-_<>\.\/(){}&\?"'@*+$!=,:'#;]/)}
       list = {}
       prepared_text.each do |word|
@@ -78,18 +79,23 @@ class SmartSimilarity < ActiveRecord::Base
     # Best used for loading big dictionary files.
     # Uses 'spawnling' to split the data into 8 stacks and load them simultaniously
     def self.load_file(path)
-      count = %x{wc -l #{path}}.split[0].to_i
+      count = %x{wc -l #{path}}.split[0].to_i.max(1)
       puts "loading file: #{path}"
       puts "=> #{count} rows"
-      File.open(path, "r").to_a.seperate([8,count].min).each_with_index do |stack, si| 
-        Spawnling.new(:argv => "sim-file-#{si}") do
-          QueryLog.info "sim-file-#{si}"
-          stack.each_with_index do |l,i|
-            QueryLog.info "#{si}: #{i.fdiv(count).round(4)} %"
-            self.add_word(l)
-          end
-        end  
-      end  
+      
+      if count == 1
+        File.open(path, "r").read.split(SPLITTING_REGEXP).each {|w| self.add_word(w)}
+      else  
+        File.open(path, "r").read.split(SPLITTING_REGEXP).seperate([8,count].min).each_with_index do |stack, si| 
+          #Spawnling.new(:argv => "sim-file-#{si}") do
+            puts "sim-file-#{si}"
+            stack.each_with_index do |l,i|
+              puts "#{si}: #{i.fdiv(count).round(4)} %"
+              self.add_word(l)
+            end
+            #end  
+        end
+      end    
     end
     
     # Load words from website and save them to index
@@ -99,7 +105,7 @@ class SmartSimilarity < ActiveRecord::Base
     
     # Loads your created query history and saves them to the index
     def self.load_from_query_history
-      queries = self.connection.select_all("SELECT query from `#{::SmartSearchHistory.table_name}`").map {|r| r["query"]}.join(" ")
+      queries = ActiveRecord::Base.connection.select_all("SELECT query from `#{::SmartSearchHistory.table_name}`").map {|r| r["query"]}.join(" ")
       self.create_from_text(queries)
       self.connection.execute("TRUNCATE `#{::SmartSearchHistory.table_name}`")
     end

@@ -7,9 +7,6 @@ require "smart_search/smart_search_engine"
 require "smart_similarity"
 require "smart_search_history"
 require "smart_search_tag"
-require "add_search_tags"
-
-
 
 
 module SmartSearch
@@ -33,10 +30,7 @@ module SmartSearch
           
           cattr_accessor :condition_default, :group_default, :tags, :order_default, :enable_similarity
           send :include, InstanceMethods
-          if self.column_names.index("search_tags").nil?
-            ::AddSearchTags.add_to_table(self.table_name)
-          end
-            self.send(:before_save, :create_search_tags)
+            self.send(:after_save, :create_search_tags)
             self.send(:before_destroy, :create_search_tags)
             self.enable_similarity ||= true
             

@@ -18,6 +18,8 @@ end
 
 Bundler::GemHelper.install_tasks
 
+
+
 Rake::TestTask.new(:test) do |t|
   t.libs << 'lib'
   t.libs << 'test'
@@ -26,4 +28,11 @@ Rake::TestTask.new(:test) do |t|
 end
 
 
-task default: :test
+require File.expand_path('../lib/smart_search/smart_search_engine', __FILE__) 
+
+SmartSearch::SmartSearchEngine.load_tasks
+
+
+
+
+task default: :test_smart_search

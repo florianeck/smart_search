@@ -1,0 +1,6 @@
+test:
+  adapter: mysql2
+  database: smart_search_test
+  username: travis
+  password: 
+  encoding: utf8
