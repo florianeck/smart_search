@@ -2,16 +2,44 @@
 
 # SmartSearch
 A simple search plug-in which provides a full-text search for ActiveRecord Models. 
-It builds the search tags based upon the attributes you define in yout model.
+It builds the search tags based upon the attributes you define in your model.
+
+It requires a MySQL Database, and the mysql2 gem!
 
 ## How to use
 First run 
 
     rake smart_search:install:migrations
 
-To use smart_search, just add the following line to your model:
 
-    smart_search :on => [- define attributes here-]
+### Setting up your data 
+To get the data which will be used for your index there are two ways:
+    
+    # Attributes can be symbols:
+    # Use symbols to access your models instance methods and attributes
+    smart_search :on => [:first_name, :last_name]
+    
+    # Attributes can be strings:
+    # Use this to access nested attributes
+    smart_search :on => ["customer.first_name", "cutomer.last_name"]
+
+You can define the attributes for the index in your model in two different ways.
+With and without evalutation:
+
+    # Without evaluation
+    # All attributes have the save importance 
+    smart_search :on => ["customer.first_name", "cutomer.last_name"]
+    
+    # With evaluation
+    # Higher Boost == higher importance
+    smart_search :on => [
+      {:field_name => "customer.first_name", :boost => 2.5}, 
+      {:field_name => "cutomer.last_name", :boost => 1}
+    ]
+    
+    # So a customer with matching first_name will be higher ranked 
+    # then one with matching last name
+    
    
 smart_searched models will automatically update their search tags after save.
 To set search tags for all rows in database, use Moldel.set_search_index   
