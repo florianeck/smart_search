@@ -87,13 +87,9 @@ class SmartSimilarity < ActiveRecord::Base
         File.open(path, "r").read.split(SPLITTING_REGEXP).each {|w| self.add_word(w)}
       else  
         File.open(path, "r").read.split(SPLITTING_REGEXP).seperate([8,count].min).each_with_index do |stack, si| 
-          #Spawnling.new(:argv => "sim-file-#{si}") do
-            puts "sim-file-#{si}"
             stack.each_with_index do |l,i|
-              puts "#{si}: #{i.fdiv(count).round(4)} %"
               self.add_word(l)
             end
-            #end  
         end
       end    
     end

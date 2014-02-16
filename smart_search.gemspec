@@ -11,7 +11,6 @@ Gem::Specification.new do |s|
   
   s.add_dependency "rails", "~> 3.2.9"
   s.add_dependency "amatch"
-  s.add_dependency "spawnling"
   s.add_dependency "friendly_extensions", "~> 0.0.61"
   s.add_dependency "mysql2" 
 end
