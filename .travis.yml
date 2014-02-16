@@ -3,4 +3,4 @@ rvm:
   - 2.1.0
   
 before_script:
-  - apt-get install curl  
+  - sudo apt-get install curl  
