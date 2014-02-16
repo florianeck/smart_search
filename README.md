@@ -27,12 +27,6 @@ To add default conditions:
 
 Will only find matching tags and the given condition    
 
-### Adding search tags column
-smart_search automatically adds the 'search_tags' column to your model.
-This happens when initializing the model.
-
-Make sure to restart the server after adding column, otherwise, ActiveRecord wont recognize it.
-
 
 ### Example:   
 Lets say you have a Customer model which has the columns 'first_name', 'last_name' and 'email' and also belongs to a User, who also has the column 'name'.
