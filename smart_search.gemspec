@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'smart_search'
-  s.version     = '0.0.61'
+  s.version     = '0.0.65'
   s.summary     = "Simple, easy to use search MySQL based search for ActiveRecord"
   s.description = "SmartSearch adds full-text search functions to ActiveRecord, including search for similiar words. Its fast, simple, and works with almost zero-config!"
   s.authors     = ["Florian Eck"]
@@ -14,5 +14,4 @@ Gem::Specification.new do |s|
   s.add_dependency "spawnling"
   s.add_dependency "friendly_extensions", "~> 0.0.61"
   s.add_dependency "mysql2" 
-  s.add_dependency "sqlite3" 
 end
