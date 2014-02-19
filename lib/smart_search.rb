@@ -15,6 +15,7 @@ module SmartSearch
     base.extend ClassMethods
   end  
   
+  # Class Methods for ActiveRecord
   module ClassMethods
     # Enable SmartSearch for the current ActiveRecord model.
     # accepts options:
@@ -26,13 +27,15 @@ module SmartSearch
     def smart_search(options = {:on => [], :conditions => nil, :group => nil, :order => "created_at", :force => false})
       if table_exists?
         # Check if search_tags exists
-        if !is_smart_search? || options[:force] == true
+        if !is_smart_search? || options[:force] == true || Rails.env == "test"
           
-          cattr_accessor :condition_default, :group_default, :tags, :order_default, :enable_similarity
+          cattr_accessor :condition_default, :group_default, :tags, :order_default, :enable_similarity, :default_template_path
           send :include, InstanceMethods
             self.send(:after_save, :create_search_tags)
             self.send(:before_destroy, :create_search_tags)
             self.enable_similarity ||= true
+            
+            attr_accessor :query_score
             
             # options zuweisen
             if options[:conditions].is_a?(String) && !options[:conditions].blank?
@@ -43,11 +46,7 @@ module SmartSearch
               self.condition_default = nil
             end  
           
-            if self.column_names.include?("created_at")
-              self.order_default = options[:order] || "created_at"
-            else  
-              self.order_default = options[:order] || "id"
-            end  
+            self.order_default = options[:order]
 
             self.tags = options[:on] || []
         end
@@ -90,12 +89,19 @@ module SmartSearch
         end  
         
         # Load ranking from Search tags
-        result_ids = SmartSearchTag.connection.select_all("select entry_id, sum(boost), group_concat(search_tags) as grouped_tags 
+        result_ids = []
+        result_scores = {}
+        SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, group_concat(search_tags) as grouped_tags 
         from smart_search_tags where `table_name`= '#{self.table_name}' and 
         
-        (#{tags.join(' OR ')}) group by entry_id having (#{tags.join(' AND ').gsub('search_tags', 'grouped_tags')}) order by sum(boost) DESC").map {|r| r["entry_id"]}
+        (#{tags.join(' OR ')}) group by entry_id having (#{tags.join(' AND ').gsub('search_tags', 'grouped_tags')}) order by score DESC").each do |r| 
+          result_ids << r["entry_id"].to_i 
+          result_scores[r["entry_id"].to_i] = r['score'].to_f
+        end  
         
-        results =  self.where(:id => result_ids)
+        results     =  self.where(:id => result_ids)
+        
+        
         
         if options[:conditions]
           results = results.where(options[:conditions])
@@ -105,15 +111,21 @@ module SmartSearch
           results = results.where(self.condition_default)
         end  
         
-        if options[:group]
+        if options[:group] 
           results = results.group(options[:group])
         end  
         
-        if options[:order]
-          results = results.order(options[:order])
+        if options[:order] || self.order_default
+          results = results.order(options[:order] || self.order_default)
         else
-          results = results.order(self.order_default)
-        end    
+          ordered_results = []
+          results.each do |r| 
+            r.query_score = result_scores[r.id]
+            ordered_results[result_ids.index(r.id)] = r
+          end  
+          
+          results = ordered_results.compact
+        end      
                 
         return results
       else                      
@@ -125,7 +137,7 @@ module SmartSearch
     def set_search_index
       s = self.all.size.to_f
       self.all.each_with_index do |a, i|
-        a.create_search_tags rescue nil
+        a.create_search_tags
         a.send(:update_without_callbacks)
         done = ((i+1).to_f/s)*100
         printf "Set search index for #{self.name}: #{done}%%                  \r"
@@ -142,8 +154,10 @@ module SmartSearch
          
   end  
   
+  # Instance Methods for ActiveRecord
   module InstanceMethods
     
+    # Load the result template path for this instance
     def result_template_path
       self.class.result_template_path
     end  
@@ -178,14 +192,26 @@ module SmartSearch
       
       
       self.clear_search_tags
-        
+      
+      # Merge search tags with same boost
+      merged_tags = {}
       tags.each do |t|
+        if merged_tags[t[:boost]]
+          merged_tags[t[:boost]][:field_name] << ",#{t[:field_name].to_s}"
+          merged_tags[t[:boost]][:search_tags] << " #{t[:search_tags]}"
+        else
+          merged_tags[t[:boost]] = {:field_name => t[:field_name].to_s, :search_tags => t[:search_tags], :boost => t[:boost] }
+        end    
+      end  
+      
+      merged_tags.each do |b,t|
         SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id))
       end
    
       
     end
     
+    # Remove search data for the instance from the index
     def clear_search_tags
       if !self.id.nil?
         SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}")

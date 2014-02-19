@@ -96,9 +96,11 @@
   
     <li><a href="../SmartSearch/SmartSearchEngine.html">SmartSearch::SmartSearchEngine</a>
   
-    <li><a href="../AddSearchTags.html">AddSearchTags</a>
-  
     <li><a href="../SmartSearchHistory.html">SmartSearchHistory</a>
+  
+    <li><a href="../SmartSearchIgnoreWord.html">SmartSearchIgnoreWord</a>
+  
+    <li><a href="../SmartSearchTag.html">SmartSearchTag</a>
   
     <li><a href="../SmartSimilarity.html">SmartSimilarity</a>
   
@@ -149,7 +151,7 @@
 
           
           <div class="method-source-code" id="get_public_models-source">
-            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 183</span>
+            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 214</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">get_public_models</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">public_models</span>.<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">m</span><span class="ruby-operator">|</span> <span class="ruby-identifier">m</span>.<span class="ruby-identifier">constantize</span>}  
 <span class="ruby-keyword">end</span></pre>
@@ -179,7 +181,7 @@
 
           
           <div class="method-source-code" id="get_search_models-source">
-            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 179</span>
+            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 210</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">get_search_models</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">search_models</span>.<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">m</span><span class="ruby-operator">|</span> <span class="ruby-identifier">m</span>.<span class="ruby-identifier">constantize</span>}  
 <span class="ruby-keyword">end</span></pre>

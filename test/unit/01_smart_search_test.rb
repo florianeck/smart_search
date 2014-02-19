@@ -63,13 +63,12 @@ class SmartSearchTest < Test::Unit::TestCase
     assert_equal  user_a, User.find_by_tags("test", :order => :last_name).last
   end   
   
-  def test_result_should_be_redefinable
-    user_c    = User.create(:first_name => "C", :last_name => "Next1")
-    user_a    = User.create(:first_name => "A", :last_name => "Bah")
-    user_b    = User.create(:first_name => "B", :last_name => "Next2")
-    
-    assert_equal [],  User.find_by_tags("A").where("last_name <> 'Bah' ")
-  end 
+  
+  def test_should_create_search_history
+    User.find_by_tags("XXXYYY")
+
+    assert_not_equal 0, SmartSearchHistory.where(:query => "XXXYYY").size
+  end  
   
   
 end  

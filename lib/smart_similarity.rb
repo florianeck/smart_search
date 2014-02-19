@@ -16,7 +16,7 @@ class SmartSimilarity < ActiveRecord::Base
 
       #== Konstanten
           # Defines the min. result of word simililarity check
-          SIMILARITY_FACTOR = 0.8
+          SIMILARITY_FACTOR = 0.78
           # Defines first simililarity check method 
           SIMILARITY_METHOD_1 = :jarowinkler
           # Defines first simililarity check method 
@@ -24,9 +24,10 @@ class SmartSimilarity < ActiveRecord::Base
           
           # An average of both results will generated and compered with 'SIMILARITY_FACTOR'
           
-          # Limit Number of similar words
+          # Limit Number of similar words (still unused)
           SIMILARITY_LIMIT  = 8
           
+          # USe this regexp to split texts into words
           SPLITTING_REGEXP = /\b/
           
       #== Validation and Callbacks
@@ -52,8 +53,12 @@ class SmartSimilarity < ActiveRecord::Base
         else  
           current = words_in_db.similarities
         end  
-        
-        current += prepared_text.select {|w| w != word && self.match_words(w,word) >= SIMILARITY_FACTOR}
+          
+        # If word is a substring of similarity word, it must not be saved,
+        # cause it will match anyway:
+        # 'how' will match 'show', so 'show' is not needed in index for 'how'
+        # Vice Versa, 'how' should also be found if query is 'show', so it will be kept in the index
+        current += prepared_text.select {|w| w != word && self.match_words(w,word) >= SIMILARITY_FACTOR && !w.match(word)}
         
         list[word] = current.uniq
       end  

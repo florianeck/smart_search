@@ -106,9 +106,11 @@
   
     <li><a href="./SmartSearch/SmartSearchEngine.html">SmartSearch::SmartSearchEngine</a>
   
-    <li><a href="./AddSearchTags.html">AddSearchTags</a>
-  
     <li><a href="./SmartSearchHistory.html">SmartSearchHistory</a>
+  
+    <li><a href="./SmartSearchIgnoreWord.html">SmartSearchIgnoreWord</a>
+  
+    <li><a href="./SmartSearchTag.html">SmartSearchTag</a>
   
     <li><a href="./SmartSimilarity.html">SmartSimilarity</a>
   
@@ -150,7 +152,7 @@
       
         <dt id="SIMILARITY_LIMIT">SIMILARITY_LIMIT
         
-        <dd class="description"><p>Limit Number of similar words</p>
+        <dd class="description"><p>Limit Number of similar words (still unused)</p>
         
       
         <dt id="SIMILARITY_METHOD_1">SIMILARITY_METHOD_1
@@ -161,6 +163,11 @@
         <dt id="SIMILARITY_METHOD_2">SIMILARITY_METHOD_2
         
         <dd class="description"><p>Defines first simililarity check method</p>
+        
+      
+        <dt id="SPLITTING_REGEXP">SPLITTING_REGEXP
+        
+        <dd class="description"><p>USe this regexp to split texts into words</p>
         
       
       </dl>
@@ -191,7 +198,7 @@
 
           
           <div class="method-source-code" id="add_word-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 69</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 71</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">add_word</span>(<span class="ruby-identifier">word</span>)
   <span class="ruby-identifier">words</span> = [<span class="ruby-identifier">word</span>]
   <span class="ruby-identifier">phrases</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">select_all</span>(<span class="ruby-string">&quot;SELECT phrase from smart_search_similarities&quot;</span>).<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>[<span class="ruby-string">&quot;phrase&quot;</span>] }  
@@ -226,10 +233,10 @@ generate date from every source, e.g. file, url, single words etc..</p>
 
           
           <div class="method-source-code" id="create_from_text-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 40</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">create_from_text</span>(<span class="ruby-identifier">text</span>)
   <span class="ruby-comment"># prepare text</span>
-  <span class="ruby-identifier">prepared_text</span> = <span class="ruby-identifier">text</span>.<span class="ruby-identifier">downcase</span>.<span class="ruby-identifier">split</span>(<span class="ruby-regexp">/\b/</span>).<span class="ruby-identifier">uniq</span>
+  <span class="ruby-identifier">prepared_text</span> = <span class="ruby-identifier">text</span>.<span class="ruby-identifier">downcase</span>.<span class="ruby-identifier">split</span>(<span class="ruby-constant">SPLITTING_REGEXP</span>).<span class="ruby-identifier">uniq</span>
   <span class="ruby-identifier">prepared_text</span> = <span class="ruby-identifier">prepared_text</span>.<span class="ruby-identifier">select</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">w</span><span class="ruby-operator">|</span> <span class="ruby-identifier">w</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-value">3</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">w</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">/[0-9\-_&lt;&gt;\.\/(){}&amp;\?&quot;&#39;@*+$!=,:&#39;#;]/</span>)}
   <span class="ruby-identifier">list</span> = {}
   <span class="ruby-identifier">prepared_text</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">word</span><span class="ruby-operator">|</span>
@@ -282,20 +289,21 @@ them simultaniously</p>
 
           
           <div class="method-source-code" id="load_file-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 80</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 82</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">load_file</span>(<span class="ruby-identifier">path</span>)
-  <span class="ruby-identifier">count</span> = <span class="ruby-node">%x{wc -l #{path}}</span>.<span class="ruby-identifier">split</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">to_i</span>
+  <span class="ruby-identifier">count</span> = <span class="ruby-node">%x{wc -l #{path}}</span>.<span class="ruby-identifier">split</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">to_i</span>.<span class="ruby-identifier">max</span>(<span class="ruby-value">1</span>)
   <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;loading file: #{path}&quot;</span>
   <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;=&gt; #{count} rows&quot;</span>
-  <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">path</span>, <span class="ruby-string">&quot;r&quot;</span>).<span class="ruby-identifier">to_a</span>.<span class="ruby-identifier">seperate</span>([<span class="ruby-value">8</span>,<span class="ruby-identifier">count</span>].<span class="ruby-identifier">min</span>).<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">stack</span>, <span class="ruby-identifier">si</span><span class="ruby-operator">|</span> 
-    <span class="ruby-constant">Spawnling</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">:argv</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-node">&quot;sim-file-#{si}&quot;</span>) <span class="ruby-keyword">do</span>
-      <span class="ruby-constant">QueryLog</span>.<span class="ruby-identifier">info</span> <span class="ruby-node">&quot;sim-file-#{si}&quot;</span>
-      <span class="ruby-identifier">stack</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">l</span>,<span class="ruby-identifier">i</span><span class="ruby-operator">|</span>
-        <span class="ruby-constant">QueryLog</span>.<span class="ruby-identifier">info</span> <span class="ruby-node">&quot;#{si}: #{i.fdiv(count).round(4)} %&quot;</span>
-        <span class="ruby-keyword">self</span>.<span class="ruby-identifier">add_word</span>(<span class="ruby-identifier">l</span>)
-      <span class="ruby-keyword">end</span>
-    <span class="ruby-keyword">end</span>  
-  <span class="ruby-keyword">end</span>  
+  
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">count</span> <span class="ruby-operator">==</span> <span class="ruby-value">1</span>
+    <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">path</span>, <span class="ruby-string">&quot;r&quot;</span>).<span class="ruby-identifier">read</span>.<span class="ruby-identifier">split</span>(<span class="ruby-constant">SPLITTING_REGEXP</span>).<span class="ruby-identifier">each</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">w</span><span class="ruby-operator">|</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">add_word</span>(<span class="ruby-identifier">w</span>)}
+  <span class="ruby-keyword">else</span>  
+    <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">path</span>, <span class="ruby-string">&quot;r&quot;</span>).<span class="ruby-identifier">read</span>.<span class="ruby-identifier">split</span>(<span class="ruby-constant">SPLITTING_REGEXP</span>).<span class="ruby-identifier">seperate</span>([<span class="ruby-value">8</span>,<span class="ruby-identifier">count</span>].<span class="ruby-identifier">min</span>).<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">stack</span>, <span class="ruby-identifier">si</span><span class="ruby-operator">|</span> 
+        <span class="ruby-identifier">stack</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">l</span>,<span class="ruby-identifier">i</span><span class="ruby-operator">|</span>
+          <span class="ruby-keyword">self</span>.<span class="ruby-identifier">add_word</span>(<span class="ruby-identifier">l</span>)
+        <span class="ruby-keyword">end</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>    
 <span class="ruby-keyword">end</span></pre>
           </div><!-- load_file-source -->
           
@@ -323,9 +331,9 @@ them simultaniously</p>
 
           
           <div class="method-source-code" id="load_from_query_history-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 101</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 104</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">load_from_query_history</span>
-  <span class="ruby-identifier">queries</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">select_all</span>(<span class="ruby-node">&quot;SELECT query from `#{::SmartSearchHistory.table_name}`&quot;</span>).<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>[<span class="ruby-string">&quot;query&quot;</span>]}.<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot; &quot;</span>)
+  <span class="ruby-identifier">queries</span> = <span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">Base</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">select_all</span>(<span class="ruby-node">&quot;SELECT query from `#{::SmartSearchHistory.table_name}`&quot;</span>).<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>[<span class="ruby-string">&quot;query&quot;</span>]}.<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot; &quot;</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">create_from_text</span>(<span class="ruby-identifier">queries</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">execute</span>(<span class="ruby-node">&quot;TRUNCATE `#{::SmartSearchHistory.table_name}`&quot;</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -355,7 +363,7 @@ them simultaniously</p>
 
           
           <div class="method-source-code" id="load_url-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 96</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 99</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">load_url</span>(<span class="ruby-identifier">url</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">create_from_text</span>(<span class="ruby-node">%x(curl #{url})</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -386,7 +394,7 @@ methods</p>
 
           
           <div class="method-source-code" id="match_words-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 119</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 122</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">match_words</span>(<span class="ruby-identifier">word1</span>, <span class="ruby-identifier">word2</span>)
   <span class="ruby-identifier">x1</span> = <span class="ruby-identifier">word1</span>.<span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;#{SIMILARITY_METHOD_1}_similar&quot;</span>, <span class="ruby-identifier">word2</span>)
   <span class="ruby-identifier">x2</span> = <span class="ruby-identifier">word1</span>.<span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;#{SIMILARITY_METHOD_2}_similar&quot;</span>, <span class="ruby-identifier">word2</span>)
@@ -418,13 +426,13 @@ methods</p>
 
           
           <div class="method-source-code" id="similars-source">
-            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 108</span>
+            <pre><span class="ruby-comment"># File lib/smart_similarity.rb, line 111</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">similars</span>(<span class="ruby-identifier">word</span>, <span class="ruby-identifier">options</span> = {})      
   <span class="ruby-identifier">list</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:phrase</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">word</span>).<span class="ruby-identifier">first</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">list</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">return</span> [<span class="ruby-identifier">word</span>]
   <span class="ruby-keyword">else</span>
-    <span class="ruby-keyword">self</span>.<span class="ruby-identifier">increment_counter</span>(<span class="ruby-value">:count</span>, <span class="ruby-identifier">list</span>.<span class="ruby-identifier">id</span>)
+    <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">execute</span>(<span class="ruby-node">&quot;UPDATE `smart_search_similarities` SET `count` = #{list.count+1} where `smart_search_similarities`.`phrase` = &#39;#{list.phrase}&#39;&quot;</span>)
     <span class="ruby-keyword">return</span> [<span class="ruby-identifier">word</span>, <span class="ruby-identifier">list</span>.<span class="ruby-identifier">similarities</span>].<span class="ruby-identifier">flatten</span>
   <span class="ruby-keyword">end</span>    
 <span class="ruby-keyword">end</span></pre>

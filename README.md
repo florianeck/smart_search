@@ -40,9 +40,12 @@ With and without evalutation:
     # So a customer with matching first_name will be higher ranked 
     # then one with matching last name
     
+#### Filling the index
    
 smart_searched models will automatically update their search tags after save.
-To set search tags for all rows in database, use Moldel.set_search_index   
+To set search tags for all rows in database, use 
+
+    Model.set_search_index   
 
 Find entries by using:
 
@@ -131,20 +134,23 @@ These will fill the similarity table with word similarity data.
 
 ## RDoc Status
 
-    Files:       6
+    Files:       7
 
-    Classes:     5 ( 3 undocumented)
-    Modules:     3 ( 3 undocumented)
-    Constants:   4 ( 0 undocumented)
-    Attributes:  0 ( 0 undocumented)
-    Methods:    19 ( 5 undocumented)
+    Classes:     6 (2 undocumented)
+    Modules:     3 (0 undocumented)
+    Constants:   5 (0 undocumented)
+    Attributes:  0 (0 undocumented)
+    Methods:    19 (3 undocumented)
 
-    Total:      31 (11 undocumented)
-     64.52% documented
+    Total:      33 (5 undocumented)
+     84.85% documented
 
 ## TODO
 - Maybe add a search controller, and some views for quick starting...
 - Documentation for similarities
+- make configurable with initializer
+- Dont split searchable attributes if no boost is used
+  - combine attributes with same boost (increases performance)
 
 
 Florian Eck

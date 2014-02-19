@@ -98,9 +98,11 @@
   
     <li><a href="../SmartSearch/SmartSearchEngine.html">SmartSearch::SmartSearchEngine</a>
   
-    <li><a href="../AddSearchTags.html">AddSearchTags</a>
-  
     <li><a href="../SmartSearchHistory.html">SmartSearchHistory</a>
+  
+    <li><a href="../SmartSearchIgnoreWord.html">SmartSearchIgnoreWord</a>
+  
+    <li><a href="../SmartSearchTag.html">SmartSearchTag</a>
   
     <li><a href="../SmartSimilarity.html">SmartSimilarity</a>
   
@@ -115,6 +117,8 @@
 
   <div id="description" class="description">
     
+<p>Class Methods for ActiveRecord</p>
+
   </div><!-- description -->
 
   
@@ -151,7 +155,7 @@
 
           
           <div class="method-source-code" id="find_by_tags-source">
-            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 68</span>
+            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 69</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">find_by_tags</span>(<span class="ruby-identifier">tags</span> = <span class="ruby-string">&quot;&quot;</span>, <span class="ruby-identifier">options</span> = {})
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">is_smart_search?</span>
     
@@ -176,8 +180,13 @@
       <span class="ruby-identifier">tags</span>.<span class="ruby-identifier">map!</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">t</span><span class="ruby-operator">|</span> <span class="ruby-node">&quot;search_tags LIKE &#39;%#{t}%&#39;&quot;</span>}
     <span class="ruby-keyword">end</span>  
     
+    <span class="ruby-comment"># Load ranking from Search tags</span>
+    <span class="ruby-identifier">result_ids</span> = <span class="ruby-constant">SmartSearchTag</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">select_all</span>(<span class="ruby-node">&quot;select entry_id, sum(boost), group_concat(search_tags) as grouped_tags 
+    from smart_search_tags where `table_name`= &#39;#{self.table_name}&#39; and 
     
-    <span class="ruby-identifier">results</span> =  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">where</span>(<span class="ruby-node">&quot;(#{tags.join(&#39; AND &#39;)})&quot;</span>)
+    (#{tags.join(&#39; OR &#39;)}) group by entry_id having (#{tags.join(&#39; AND &#39;).gsub(&#39;search_tags&#39;, &#39;grouped_tags&#39;)}) order by sum(boost) DESC&quot;</span>).<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>[<span class="ruby-string">&quot;entry_id&quot;</span>]}
+    
+    <span class="ruby-identifier">results</span> =  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:id</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">result_ids</span>)
     
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:conditions</span>]
       <span class="ruby-identifier">results</span> = <span class="ruby-identifier">results</span>.<span class="ruby-identifier">where</span>(<span class="ruby-identifier">options</span>[<span class="ruby-value">:conditions</span>])
@@ -229,7 +238,7 @@ this model</p>
 
           
           <div class="method-source-code" id="is_smart_search-3F-source">
-            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 58</span>
+            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 59</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">is_smart_search?</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included_modules</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-constant">InstanceMethods</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -260,7 +269,7 @@ this model</p>
 
           
           <div class="method-source-code" id="result_template_path-source">
-            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 63</span>
+            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 64</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">result_template_path</span>
   <span class="ruby-node">&quot;/search/results/#{self.name.split(&quot;::&quot;).last.underscore}&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -293,7 +302,7 @@ method</p>
 
           
           <div class="method-source-code" id="set_search_index-source">
-            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 120</span>
+            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 126</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_search_index</span>
   <span class="ruby-identifier">s</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">size</span>.<span class="ruby-identifier">to_f</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">a</span>, <span class="ruby-identifier">i</span><span class="ruby-operator">|</span>
@@ -324,15 +333,15 @@ method</p>
 
         <div class="method-description">
           
-          <p>Create all search tags for this table into similarity index</p>
+          <p>Load all search tags for this table into similarity index</p>
           
 
           
           <div class="method-source-code" id="set_similarity_index-source">
-            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 131</span>
+            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 137</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_similarity_index</span>
   
-  <span class="ruby-identifier">search_tags_list</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">select_all</span>(<span class="ruby-node">&quot;SELECT search_tags from #{self.table_name}&quot;</span>).<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>[<span class="ruby-string">&quot;search_tags&quot;</span>]}
+  <span class="ruby-identifier">search_tags_list</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">select_all</span>(<span class="ruby-node">&quot;SELECT search_tags from #{SmartSearchTag.table_name} where `table_name` = #{self.table_name}&quot;</span>).<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>[<span class="ruby-string">&quot;search_tags&quot;</span>]}
   
   <span class="ruby-constant">SmartSimilarity</span>.<span class="ruby-identifier">create_from_text</span>(<span class="ruby-identifier">search_tags_list</span>.<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot; &quot;</span>))
 <span class="ruby-keyword">end</span></pre>
@@ -374,20 +383,17 @@ ActiveRecord model. accepts options:</p>
 
           
           <div class="method-source-code" id="smart_search-source">
-            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 23</span>
+            <pre><span class="ruby-comment"># File lib/smart_search.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">smart_search</span>(<span class="ruby-identifier">options</span> = {<span class="ruby-value">:on</span> =<span class="ruby-operator">&gt;</span> [], <span class="ruby-value">:conditions</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">:group</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">:order</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-string">&quot;created_at&quot;</span>, <span class="ruby-value">:force</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">false</span>})
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">table_exists?</span>
     <span class="ruby-comment"># Check if search_tags exists</span>
     <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">is_smart_search?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:force</span>] <span class="ruby-operator">==</span> <span class="ruby-keyword">true</span>
       
-      <span class="ruby-identifier">cattr_accessor</span> <span class="ruby-value">:condition_default</span>, <span class="ruby-value">:group_default</span>, <span class="ruby-value">:tags</span>, <span class="ruby-value">:order_default</span>, <span class="ruby-value">:enable_similarity</span>
+      <span class="ruby-identifier">cattr_accessor</span> <span class="ruby-value">:condition_default</span>, <span class="ruby-value">:group_default</span>, <span class="ruby-value">:tags</span>, <span class="ruby-value">:order_default</span>, <span class="ruby-value">:enable_similarity</span>, <span class="ruby-value">:default_template_path</span>
       <span class="ruby-identifier">send</span> <span class="ruby-value">:include</span>, <span class="ruby-constant">InstanceMethods</span>
-      <span class="ruby-keyword">if</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">column_names</span>.<span class="ruby-identifier">index</span>(<span class="ruby-string">&quot;search_tags&quot;</span>).<span class="ruby-identifier">nil?</span>
-        <span class="ruby-operator">::</span><span class="ruby-constant">AddSearchTags</span>.<span class="ruby-identifier">add_to_table</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">table_name</span>)
-      <span class="ruby-keyword">end</span>
-        <span class="ruby-keyword">self</span>.<span class="ruby-identifier">send</span>(<span class="ruby-value">:before_save</span>, <span class="ruby-value">:create_search_tags</span>)
-        
-        <span class="ruby-keyword">self</span>.<span class="ruby-identifier">enable_similarity</span> = <span class="ruby-keyword">true</span>
+        <span class="ruby-keyword">self</span>.<span class="ruby-identifier">send</span>(<span class="ruby-value">:after_save</span>, <span class="ruby-value">:create_search_tags</span>)
+        <span class="ruby-keyword">self</span>.<span class="ruby-identifier">send</span>(<span class="ruby-value">:before_destroy</span>, <span class="ruby-value">:create_search_tags</span>)
+        <span class="ruby-keyword">self</span>.<span class="ruby-identifier">enable_similarity</span> <span class="ruby-operator">||=</span> <span class="ruby-keyword">true</span>
         
         <span class="ruby-comment"># options zuweisen</span>
         <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:conditions</span>].<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">options</span>[<span class="ruby-value">:conditions</span>].<span class="ruby-identifier">blank?</span>

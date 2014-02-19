@@ -4,3 +4,6 @@ rvm:
   
 before_script:
   - sudo apt-get install curl  
+
+notifications:
+  email: false

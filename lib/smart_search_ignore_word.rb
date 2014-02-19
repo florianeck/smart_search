@@ -1,3 +1,5 @@
+# The keep words out of the index, they can be added into this table
+# TODO: Its not working yet
 class SmartSearchIgnoreWord < ActiveRecord::Base
 
   #= Configuration
