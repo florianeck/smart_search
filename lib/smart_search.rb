@@ -32,7 +32,7 @@ module SmartSearch
           cattr_accessor :condition_default, :group_default, :tags, :order_default, :enable_similarity, :default_template_path
           send :include, InstanceMethods
             self.send(:after_save, :create_search_tags)
-            self.send(:before_destroy, :create_search_tags)
+            self.send(:before_destroy, :clear_search_tags)
             self.enable_similarity ||= true
             
             attr_accessor :query_score
@@ -72,7 +72,7 @@ module SmartSearch
           self.connection.execute("INSERT INTO `#{::SmartSearchHistory.table_name}` (`query`) VALUES ('#{tags.gsub(/[^a-zA-ZäöüÖÄÜß\ ]/, '')}');")
         end  
         
-        tags = tags.split(" ")
+        tags = tags.split(/[\ -]/).select {|t| !t.blank?}
         
         # Fallback for Empty String
         tags << "#" if tags.empty?
@@ -91,7 +91,7 @@ module SmartSearch
         # Load ranking from Search tags
         result_ids = []
         result_scores = {}
-        SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, group_concat(search_tags) as grouped_tags 
+          SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, group_concat(search_tags) as grouped_tags 
         from smart_search_tags where `table_name`= '#{self.table_name}' and 
         
         (#{tags.join(' OR ')}) group by entry_id having (#{tags.join(' AND ').gsub('search_tags', 'grouped_tags')}) order by score DESC").each do |r| 
@@ -99,7 +99,12 @@ module SmartSearch
           result_scores[r["entry_id"].to_i] = r['score'].to_f
         end  
         
-        results     =  self.where(:id => result_ids)
+        # Enable unscoped searching
+        if options[:unscoped] == true
+          results     =  self.unscoped.where(:id => result_ids)
+        else  
+          results     =  self.where(:id => result_ids)
+        end  
         
         
         
@@ -138,7 +143,6 @@ module SmartSearch
       s = self.all.size.to_f
       self.all.each_with_index do |a, i|
         a.create_search_tags
-        a.send(:update_without_callbacks)
         done = ((i+1).to_f/s)*100
         printf "Set search index for #{self.name}: #{done}%%                  \r"
       end  
@@ -186,7 +190,7 @@ module SmartSearch
           tag[:search_tags] << tagx.to_s  
         end
         
-        tag[:search_tags] = tag[:search_tags].split(" ").uniq.join(" ").downcase   
+        tag[:search_tags] = tag[:search_tags].split(" ").uniq.join(" ").downcase.clear_html   
         tags << tag
       end
       
@@ -194,20 +198,26 @@ module SmartSearch
       self.clear_search_tags
       
       # Merge search tags with same boost
-      merged_tags = {}
+      @merged_tags = {}
+      
       tags.each do |t|
-        if merged_tags[t[:boost]]
-          merged_tags[t[:boost]][:field_name] << ",#{t[:field_name].to_s}"
-          merged_tags[t[:boost]][:search_tags] << " #{t[:search_tags]}"
+        boost = t[:boost]
+        
+        if @merged_tags[boost]
+        
+          @merged_tags[boost][:field_name] << ",#{t[:field_name]}"
+          @merged_tags[boost][:search_tags] << " #{t[:search_tags]}"
         else
-          merged_tags[t[:boost]] = {:field_name => t[:field_name].to_s, :search_tags => t[:search_tags], :boost => t[:boost] }
+          @merged_tags[boost] = {:field_name => "#{t[:field_name]}", :search_tags => t[:search_tags], :boost => boost }
         end    
+        
       end  
       
-      merged_tags.each do |b,t|
-        SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id))
+      @merged_tags.values.each do |t|
+        if !t[:search_tags].blank? && t[:search_tags].size > 1
+          SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id, :search_tags => t[:search_tags].strip.split(" ").uniq.join(" "))) 
+        end  
       end
-   
       
     end
     

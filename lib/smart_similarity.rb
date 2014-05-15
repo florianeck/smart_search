@@ -16,7 +16,7 @@ class SmartSimilarity < ActiveRecord::Base
 
       #== Konstanten
           # Defines the min. result of word simililarity check
-          SIMILARITY_FACTOR = 0.78
+          SIMILARITY_FACTOR = 0.77
           # Defines first simililarity check method 
           SIMILARITY_METHOD_1 = :jarowinkler
           # Defines first simililarity check method 
@@ -106,8 +106,9 @@ class SmartSimilarity < ActiveRecord::Base
     
     # Loads your created query history and saves them to the index
     def self.load_from_query_history
-      queries = ActiveRecord::Base.connection.select_all("SELECT query from `#{::SmartSearchHistory.table_name}`").map {|r| r["query"]}.join(" ")
-      self.create_from_text(queries)
+      queries = ActiveRecord::Base.connection.select_all("SELECT query from `#{::SmartSearchHistory.table_name}`").map {|r| r["query"]}
+      queries.each {|q| self.add_word(q) }
+      
       self.connection.execute("TRUNCATE `#{::SmartSearchHistory.table_name}`")
     end
     

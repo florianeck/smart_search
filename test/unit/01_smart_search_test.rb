@@ -61,7 +61,14 @@ class SmartSearchTest < Test::Unit::TestCase
     
     assert_equal  user_c, User.find_by_tags("test", :order => :last_name).first
     assert_equal  user_a, User.find_by_tags("test", :order => :last_name).last
-  end   
+  end
+  
+  def test_search_tags_should_work_with_array_of_strings   
+    User.smart_search :on => %w(first_name last_name office.name), :force => true
+    o = Office.create(:name => "Neandertal")
+    u = User.create(:first_name => "Homo", :last_name => "Sapiens", :office_id => o.id)
+    
+  end  
   
   
   def test_should_create_search_history

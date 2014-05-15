@@ -131,6 +131,10 @@ Added rake tasks for loading similarity data
 
 These will fill the similarity table with word similarity data.
 
+## Running cronjob
+When using rvm, calling the rake task cron tab must be called like that
+
+    source "$HOME/.rvm/scripts/rvm" && rvm use 2.1.0 &&  cd /path/to/app  && RAILS_ENV=production rake smart_search:similarity_from_query_history
 
 ## RDoc Status
 

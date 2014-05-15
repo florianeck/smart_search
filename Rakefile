@@ -16,7 +16,7 @@ RDoc::Task.new(:rdoc) do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-Bundler::GemHelper.install_tasks
+
 
 
 
@@ -30,6 +30,7 @@ end
 
 require File.expand_path('../lib/smart_search/smart_search_engine', __FILE__) 
 
+Bundler::GemHelper.install_tasks
 SmartSearch::SmartSearchEngine.load_tasks
 
 
