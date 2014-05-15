@@ -4,7 +4,7 @@ class CreateSmartSearchTags < ActiveRecord::Migration
       t.string    :table_name
       t.integer   :entry_id
       t.text      :search_tags
-      t.string    :field_name
+      t.text    :field_name
       t.decimal   :boost, :scale => 2, :precision => 10, :default => 1
     end
     
