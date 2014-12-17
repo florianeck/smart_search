@@ -63,14 +63,6 @@ module SmartSearch
       "/search/results/#{self.name.split("::").last.underscore}"
     end  
     
-    def dont_update_search_tags!
-      self.dont_update_search_tags = true
-    end
-    
-    def update_search_tags?
-      !self.dont_update_search_tags
-    end    
-    
     # Serach database for given search tags
     def find_by_tags(tags = "", options = {})
       if self.is_smart_search?
@@ -173,6 +165,14 @@ module SmartSearch
     def result_template_path
       self.class.result_template_path
     end  
+    
+    def dont_update_search_tags!
+      self.dont_update_search_tags = true
+    end
+    
+    def update_search_tags?
+      !self.dont_update_search_tags
+    end 
     
     # create search tags for this very record based on the attributes defined in ':on' option passed to the 'Class.smart_search' method
     def create_search_tags
