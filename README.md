@@ -154,7 +154,6 @@ When using rvm, calling the rake task cron tab must be called like that
 - Documentation for similarities
 - make configurable with initializer
 - Dont split searchable attributes if no boost is used
-  - combine attributes with same boost (increases performance)
 
 
 Florian Eck

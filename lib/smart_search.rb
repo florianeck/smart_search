@@ -31,11 +31,11 @@ module SmartSearch
           
           cattr_accessor :condition_default, :group_default, :tags, :order_default, :enable_similarity, :default_template_path
           send :include, InstanceMethods
-            self.send(:after_save, :create_search_tags)
+            self.send(:after_save, :create_search_tags, :if => :update_search_tags?) unless options[:auto] == false
             self.send(:before_destroy, :clear_search_tags)
             self.enable_similarity ||= true
             
-            attr_accessor :query_score
+            attr_accessor :query_score, :dont_update_search_tags
             
             # options zuweisen
             if options[:conditions].is_a?(String) && !options[:conditions].blank?
@@ -62,6 +62,14 @@ module SmartSearch
     def result_template_path
       "/search/results/#{self.name.split("::").last.underscore}"
     end  
+    
+    def dont_update_search_tags!
+      self.dont_update_search_tags = true
+    end
+    
+    def update_search_tags?
+      !self.dont_update_search_tags
+    end    
     
     # Serach database for given search tags
     def find_by_tags(tags = "", options = {})
