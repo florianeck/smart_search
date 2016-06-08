@@ -67,6 +67,8 @@ module SmartSearch
     def find_by_tags(tags = "", options = {})
       if self.is_smart_search?
 
+        tags = tags.join(" ") if tags.is_a?(Array)
+
         # Save Data for similarity analysis
         if tags.size > 3
           self.connection.execute("INSERT INTO `#{::SmartSearchHistory.table_name}` (`query`) VALUES ('#{tags.gsub(/[^a-zA-ZäöüÖÄÜß\ ]/, '')}');")
