@@ -144,13 +144,11 @@ module SmartSearch
       self.all.each_with_index do |a, i|
         a.create_search_tags
         done = ((i+1).to_f/s)*100
-        printf "Set search index for #{self.name}: #{done}%%                  \r"
       end
     end
 
     # Load all search tags for this table into similarity index
     def set_similarity_index
-
       search_tags_list = self.connection.select_all("SELECT search_tags from #{SmartSearchTag.table_name} where `table_name` = #{self.table_name}").map {|r| r["search_tags"]}
 
       SmartSimilarity.create_from_text(search_tags_list.join(" "))
