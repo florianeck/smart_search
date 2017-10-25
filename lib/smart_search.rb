@@ -2,7 +2,7 @@
 require "rails"
 
 require "smart_search"
-require "smart_search/smart_search_engine"
+require "smart_search/engine"
 
 require "smart_similarity"
 require "smart_search_history"
