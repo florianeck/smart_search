@@ -31,24 +31,24 @@ module SmartSearch
 
           cattr_accessor :condition_default, :group_default, :tags, :order_default, :enable_similarity, :default_template_path
           send :include, InstanceMethods
-            self.send(:after_save, :create_search_tags, :if => :update_search_tags?) unless options[:auto] == false
-            self.send(:before_destroy, :clear_search_tags)
-            self.enable_similarity ||= true
+          self.send(:after_save, :create_search_tags, :if => :update_search_tags?) unless options[:auto] == false
+          self.send(:before_destroy, :clear_search_tags)
+          self.enable_similarity ||= true
 
-            attr_accessor :query_score, :dont_update_search_tags
+          attr_accessor :query_score, :dont_update_search_tags
 
-            # options zuweisen
-            if options[:conditions].is_a?(String) && !options[:conditions].blank?
-              self.condition_default = options[:conditions]
-            elsif !options[:conditions].nil?
-              raise ArgumentError, ":conditions must be a valid SQL Query"
-            else
-              self.condition_default = nil
-            end
+          # options zuweisen
+          if options[:conditions].is_a?(String) && !options[:conditions].blank?
+            self.condition_default = options[:conditions]
+          elsif !options[:conditions].nil?
+            raise ArgumentError, ":conditions must be a valid SQL Query"
+          else
+            self.condition_default = nil
+          end
 
-            self.order_default = options[:order]
+          self.order_default = options[:order]
 
-            self.tags = options[:on] || []
+          self.tags = options[:on] || []
         end
       end
     end
@@ -93,89 +93,91 @@ module SmartSearch
         # Load ranking from Search tags
         result_ids = []
         result_scores = {}
-          SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, group_concat(search_tags) as grouped_tags
+        SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, group_concat(search_tags) as grouped_tags
         from smart_search_tags where `table_name`= '#{self.table_name}' and
 
         (#{tags.join(' OR ')}) group by entry_id having (#{tags.join(' AND ').gsub('search_tags', 'grouped_tags')}) order by score DESC").each do |r|
-          result_ids << r["entry_id"].to_i
-          result_scores[r["entry_id"].to_i] = r['score'].to_f
-        end
+        result_ids << r["entry_id"].to_i
+        result_scores[r["entry_id"].to_i] = r['score'].to_f
+      end
 
-        # Enable unscoped searching
-        if options[:unscoped] == true
-          results     =  self.unscoped.where(:id => result_ids)
-        else
-          results     =  self.where(:id => result_ids)
-        end
-
-        if options[:conditions]
-          results = results.where(options[:conditions])
-        end
-
-        if !self.condition_default.blank?
-          results = results.where(self.condition_default)
-        end
-
-        if options[:group]
-          results = results.group(options[:group])
-        end
-
-        if options[:order] || self.order_default
-          results = results.order(options[:order] || self.order_default)
-        else
-          ordered_results = []
-          results.each do |r|
-            r.query_score = result_scores[r.id]
-            ordered_results[result_ids.index(r.id)] = r
-          end
-
-          results = ordered_results.compact
-        end
-
-        return results
+      # Enable unscoped searching
+      if options[:unscoped] == true
+        results     =  self.unscoped.where(:id => result_ids)
       else
-        raise "#{self.inspect} is not a SmartSearch"
+        results     =  self.where(:id => result_ids)
       end
-    end
 
-    # reload search_tags for entire table based on the attributes defined in ':on' option passed to the 'smart_search' method
-    def set_search_index
-      s = self.all.size.to_f
-      self.all.each_with_index do |a, i|
-        a.create_search_tags
-        done = ((i+1).to_f/s)*100
+      if options[:conditions]
+        results = results.where(options[:conditions])
       end
+
+      if !self.condition_default.blank?
+        results = results.where(self.condition_default)
+      end
+
+      if options[:group]
+        results = results.group(options[:group])
+      end
+
+      if options[:order] || self.order_default
+        results = results.order(options[:order] || self.order_default)
+      else
+        ordered_results = []
+        results.each do |r|
+          r.query_score = result_scores[r.id]
+          ordered_results[result_ids.index(r.id)] = r
+        end
+
+        results = ordered_results.compact
+      end
+
+      return results
+    else
+      raise "#{self.inspect} is not a SmartSearch"
     end
-
-    # Load all search tags for this table into similarity index
-    def set_similarity_index
-      search_tags_list = self.connection.select_all("SELECT search_tags from #{SmartSearchTag.table_name} where `table_name` = #{self.table_name}").map {|r| r["search_tags"]}
-
-      SmartSimilarity.create_from_text(search_tags_list.join(" "))
-    end
-
   end
 
-  # Instance Methods for ActiveRecord
-  module InstanceMethods
-
-    # Load the result template path for this instance
-    def result_template_path
-      self.class.result_template_path
+  # reload search_tags for entire table based on the attributes defined in ':on' option passed to the 'smart_search' method
+  def set_search_index
+    s = self.all.size.to_f
+    self.all.each_with_index do |a, i|
+      a.create_search_tags
+      done = ((i+1).to_f/s)*100
     end
+  end
 
-    def dont_update_search_tags!
-      self.dont_update_search_tags = true
-    end
+  # Load all search tags for this table into similarity index
+  def set_similarity_index
+    search_tags_list = self.connection.select_all("SELECT search_tags from #{SmartSearchTag.table_name} where `table_name` = #{self.table_name}").map {|r| r["search_tags"]}
 
-    def update_search_tags?
-      !self.dont_update_search_tags
-    end
+    SmartSimilarity.create_from_text(search_tags_list.join(" "))
+  end
 
-    # create search tags for this very record based on the attributes defined in ':on' option passed to the 'Class.smart_search' method
-    def create_search_tags
+end
+
+# Instance Methods for ActiveRecord
+module InstanceMethods
+
+  # Load the result template path for this instance
+  def result_template_path
+    self.class.result_template_path
+  end
+
+  def dont_update_search_tags!
+    self.dont_update_search_tags = true
+  end
+
+  def update_search_tags?
+    !self.dont_update_search_tags
+  end
+
+  # create search tags for this very record based on the attributes defined in ':on' option passed to the 'Class.smart_search' method
+  def create_search_tags
+    # storing tags must never fail the systems
+    begin
       tags      = []
-
+         
       self.class.tags.each do |tag|
 
         if !tag.is_a?(Hash)
@@ -221,39 +223,53 @@ module SmartSearch
 
       @merged_tags.values.each do |t|
         if !t[:search_tags].blank? && t[:search_tags].size > 1
-          SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id, :search_tags => t[:search_tags].strip.split(" ").uniq.join(" ")))
+          begin
+            SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id, :search_tags => t[:search_tags].strip.split(" ").uniq.join(" ")))
+          rescue Exception => e
+            
+          end
         end
       end
-
+        
+    rescue Exception => e
+      Rails.logger.error "SMART SEARCH FAILED TO TO STORE SEARCH TAGS #{self.class.name} #{self.id}"
+      Rails.logger.error e.message
+      Rails.logger.error puts e.backtrace
     end
+      
+      
 
-    # Remove search data for the instance from the index
-    def clear_search_tags
-      if !self.id.nil?
-        SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}") rescue nil
-      end
-    end
+      
 
   end
 
-
-  class Config
-
-    cattr_accessor  :search_models
-    cattr_accessor  :public_models
-
-    self.search_models = []
-    self.public_models = []
-
-    def self.get_search_models
-      self.search_models.map {|m| m.constantize}
+  # Remove search data for the instance from the index
+  def clear_search_tags
+    if !self.id.nil?
+      SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}") rescue nil
     end
-
-    def self.get_public_models
-      self.public_models.map {|m| m.constantize}
-    end
-
   end
+
+end
+
+
+class Config
+
+  cattr_accessor  :search_models
+  cattr_accessor  :public_models
+
+  self.search_models = []
+  self.public_models = []
+
+  def self.get_search_models
+    self.search_models.map {|m| m.constantize}
+  end
+
+  def self.get_public_models
+    self.public_models.map {|m| m.constantize}
+  end
+
+end
 
 
 end

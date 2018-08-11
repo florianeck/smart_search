@@ -16,7 +16,7 @@ class SmartSimilarity < ActiveRecord::Base
 
       #== Konstanten
           # Defines the min. result of word simililarity check
-          SIMILARITY_FACTOR = 0.77
+          SIMILARITY_FACTOR = 0.78
           # Defines first simililarity check method 
           SIMILARITY_METHOD_1 = :jarowinkler
           # Defines first simililarity check method 
@@ -75,7 +75,7 @@ class SmartSimilarity < ActiveRecord::Base
     def self.add_word(word)
       words = [word]
       phrases = self.connection.select_all("SELECT phrase from smart_search_similarities").map {|r| r["phrase"] }  
-      words +=  phrases.select {|p| self.match_words(p,word) >= SIMILARITY_FACTOR }
+      words +=  phrases.select {|p| self.match_words(p,word) >= SIMILARITY_FACTOR && (word.size - p.size).abs < 2 }
       
       self.create_from_text(words.join(" "))
     end
