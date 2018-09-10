@@ -15,9 +15,6 @@ namespace :db do
     ActiveRecord::Base.establish_connection(config)
   end
   
-  task :migrate do
-    ActiveRecord::Migrator.migrate(ActiveRecord::Migrator.migrations_paths)
-  end    
 end  
 
 task :test_smart_search do

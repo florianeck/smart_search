@@ -16,7 +16,7 @@ class SmartSimilarity < ActiveRecord::Base
 
       #== Konstanten
           # Defines the min. result of word simililarity check
-          SIMILARITY_FACTOR = 0.78
+          SIMILARITY_FACTOR = 0.83
           # Defines first simililarity check method 
           SIMILARITY_METHOD_1 = :jarowinkler
           # Defines first simililarity check method 
@@ -24,8 +24,8 @@ class SmartSimilarity < ActiveRecord::Base
           
           # An average of both results will generated and compered with 'SIMILARITY_FACTOR'
           
-          # Limit Number of similar words (still unused)
-          SIMILARITY_LIMIT  = 8
+          # Limit Number of similar words
+          SIMILARITY_LIMIT  = 5
           
           # USe this regexp to split texts into words
           SPLITTING_REGEXP = /\b/
