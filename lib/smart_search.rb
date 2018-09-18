@@ -74,7 +74,7 @@ module SmartSearch
           self.connection.execute("INSERT INTO `#{::SmartSearchHistory.table_name}` (`query`) VALUES ('#{tags.gsub(/[^a-zA-ZäöüÖÄÜß\ ]/, '')}');")
         end
 
-        tags = tags.gsub(/[\(\)\[\]\'\"\*\%\|]/, '').split(/[\ -]/).select {|t| !t.blank?}
+        tags = tags.gsub(/[\(\)\[\]\'\"\*\%\|\&]/, '').split(/[\ -]/).select {|t| !t.blank?}
 
         # Fallback for Empty String
         tags << "#" if tags.empty?
