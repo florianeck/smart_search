@@ -12,6 +12,5 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", ">= 4.0.4"
   s.add_dependency "amatch"
   s.add_dependency "friendly_extensions"
-  s.add_dependency "mysql2"
   s.add_dependency "unicode-emoji"
 end

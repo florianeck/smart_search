@@ -77,32 +77,8 @@ class SmartSimilarity < ActiveRecord::Base
       phrases = self.connection.select_all("SELECT phrase from smart_search_similarities").map {|r| r["phrase"] }  
       words +=  phrases.select {|p| self.match_words(p,word) >= SIMILARITY_FACTOR && (word.size - p.size).abs < 2 }
       
-      self.create_from_text(words.join(" "))
+      self.create_from_text(words.map(&:downcase).join(" "))
     end
-    
-    # Load an entire file to the index.
-    # Best used for loading big dictionary files.
-    # Uses 'spawnling' to split the data into 8 stacks and load them simultaniously
-    def self.load_file(path)
-      count = %x{wc -l #{path}}.split[0].to_i.max(1)
-      puts "loading file: #{path}"
-      puts "=> #{count} rows"
-      
-      if count == 1
-        File.open(path, "r").read.split(SPLITTING_REGEXP).each {|w| self.add_word(w)}
-      else  
-        File.open(path, "r").read.split(SPLITTING_REGEXP).seperate([8,count].min).each_with_index do |stack, si| 
-            stack.each_with_index do |l,i|
-              self.add_word(l)
-            end
-        end
-      end    
-    end
-    
-    # Load words from website and save them to index
-    def self.load_url(url)
-      self.create_from_text(%x(curl #{url}))
-    end  
     
     # Loads your created query history and saves them to the index
     def self.load_from_query_history
@@ -113,13 +89,13 @@ class SmartSimilarity < ActiveRecord::Base
     end
     
     # Get array of similar words including orig word
-    def self.similars(word, options = {})      
+    def self.similars(word, options = {})  
       list = self.where(:phrase => word).first
       if list.nil?
-        return [word]
+        return [word].map(&:downcase)
       else
         self.connection.execute("UPDATE `smart_search_similarities` SET `count` = #{list.count+1} where `smart_search_similarities`.`phrase` = '#{list.phrase}'")
-        return [word, list.similarities].flatten
+        return [word, list.similarities].flatten.map(&:downcase)
       end    
     end
     
