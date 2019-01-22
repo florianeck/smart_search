@@ -49,7 +49,12 @@ module SmartSearch
           self.order_default = options[:order]
 
           self.tags = options[:on] || []
+        elsif is_smart_search?
+          # Allow re-adding attributes for search
+          logger.info("Re-Adding search data on #{self.name}: #{options[:on].inspect}".yellow)
+          self.tags += options[:on]
         end
+          
       end
     end
 
