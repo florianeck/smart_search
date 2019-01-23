@@ -31,7 +31,7 @@ module SmartSearch
 
           cattr_accessor :condition_default, :group_default, :tags, :order_default, :enable_similarity, :default_template_path
           send :include, InstanceMethods
-          self.send(:after_save, :create_search_tags, :if => :update_search_tags?) unless options[:auto] == false
+          self.send(:after_commit, :create_search_tags, :if => :update_search_tags?) unless options[:auto] == false
           self.send(:before_destroy, :clear_search_tags)
           self.enable_similarity ||= true
 
