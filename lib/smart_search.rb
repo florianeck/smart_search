@@ -103,7 +103,16 @@ module SmartSearch
         # Load ranking from Search tags
         result_ids = []
         result_scores = {}
-        SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, array_agg(search_tags) as grouped_tags
+        
+        group_method = case ActiveRecord::Base.connection.adapter_name
+        when 'PostgreSQL'
+          "array_agg"
+        else
+          "group_concat"
+        end
+        
+        
+        SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, #{group_method}(search_tags) as grouped_tags
         from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
         (#{tags.join(' OR ')}) group by entry_id order by score DESC").each do |r|
         result_ids << r["entry_id"].to_i
