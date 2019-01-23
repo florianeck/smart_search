@@ -49,7 +49,12 @@ module SmartSearch
           self.order_default = options[:order]
 
           self.tags = options[:on] || []
+        elsif is_smart_search?
+          # Allow re-adding attributes for search
+          logger.info("Re-Adding search data on #{self.name}: #{options[:on].inspect}".yellow)
+          self.tags += options[:on]
         end
+          
       end
     end
 
@@ -71,7 +76,7 @@ module SmartSearch
 
         # Save Data for similarity analysis
         if tags.size > 3
-          self.connection.execute("INSERT INTO `#{::SmartSearchHistory.table_name}` (`query`) VALUES ('#{tags.gsub(/[^a-zA-ZäöüÖÄÜß\ ]/, '')}');")
+          self.connection.execute("INSERT INTO #{::SmartSearchHistory.quoted_table_name} (#{ActiveRecord::Base.connection.quote_column_name('query')}) VALUES ('#{tags.gsub(/[^a-zA-ZäöüÖÄÜß\ ]/, '')}');")
         end
 
         tags = tags.gsub(/[\(\)\[\]\'\"\*\%\|\&]/, '').split(/[\ -]/).select {|t| !t.blank?}
@@ -83,7 +88,12 @@ module SmartSearch
         if self.enable_similarity == true
           tags.map! do |t|
             similars = SmartSimilarity.similars(t, :increment_counter => true).join("|")
-            "search_tags REGEXP '#{similars}'"
+            case ActiveRecord::Base.connection.adapter_name
+            when 'PostgreSQL'
+              "search_tags ~* '#{similars}'"
+            else
+              "search_tags REGEXP '#{similars}'"
+            end  
           end
 
         else
@@ -93,19 +103,27 @@ module SmartSearch
         # Load ranking from Search tags
         result_ids = []
         result_scores = {}
-        SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, group_concat(search_tags) as grouped_tags
-        from smart_search_tags where `table_name`= '#{self.table_name}' and
-
-        (#{tags.join(' OR ')}) group by entry_id having (#{tags.join(' AND ').gsub('search_tags', 'grouped_tags')}) order by score DESC").each do |r|
+        
+        group_method = case ActiveRecord::Base.connection.adapter_name
+        when 'PostgreSQL'
+          "array_agg"
+        else
+          "group_concat"
+        end
+        
+        
+        SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, #{group_method}(search_tags) as grouped_tags
+        from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
+        (#{tags.join(' OR ')}) group by entry_id order by score DESC").each do |r|
         result_ids << r["entry_id"].to_i
         result_scores[r["entry_id"].to_i] = r['score'].to_f
       end
 
       # Enable unscoped searching
       if options[:unscoped] == true
-        results     =  self.unscoped.where(:id => result_ids)
+        results     =  self.unscoped.where(self.primary_key => result_ids)
       else
-        results     =  self.where(:id => result_ids)
+        results     =  self.where(self.primary_key => result_ids)
       end
 
       if options[:conditions]
