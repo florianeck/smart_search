@@ -24,12 +24,17 @@ module SmartSearch
     # - :group, group by column
     # - :order, order by column
     # see readme for details
-    def smart_search(options = {:on => [], :conditions => nil, :group => nil, :order => "created_at", :force => false})
+    def smart_search(options = {:on => [], :conditions => nil, :split => false, :group => nil, :order => "created_at", :force => false})
       if table_exists?
         # Check if search_tags exists
         if !is_smart_search? || options[:force] == true || Rails.env == "test"
 
           cattr_accessor :condition_default, :group_default, :tags, :order_default, :enable_similarity, :default_template_path
+
+          # BETA!
+          cattr_accessor :split_searchable_fields
+
+          self.split_searchable_fields = options[:split]
           send :include, InstanceMethods
           self.send(:after_commit, :create_search_tags, :if => :update_search_tags?) unless options[:auto] == false
           self.send(:before_destroy, :clear_search_tags)
@@ -72,59 +77,22 @@ module SmartSearch
     def find_by_tags(tags = "", options = {})
       if self.is_smart_search?
 
-        tags = tags.join(" ") if tags.is_a?(Array)
+        tags = store_history_and_get_sanitized_search_tags(tags)
+        tags = map_similarity_tags(tags)
 
-        # Save Data for similarity analysis
-        if tags.size > 3
-          self.connection.execute("INSERT INTO #{::SmartSearchHistory.quoted_table_name} (#{ActiveRecord::Base.connection.quote_column_name('query')}) VALUES ('#{tags.gsub(/[^a-zA-ZäöüÖÄÜß\ ]/, '')}');")
-        end
-
-        tags = tags.gsub(/[\(\)\[\]\'\"\*\%\|\&]/, '').split(/[\ -]/).select {|t| !t.blank?}
-
-        # Fallback for Empty String
-        tags << "#" if tags.empty?
-
-        # Similarity
-        if self.enable_similarity == true
-          tags.map! do |t|
-            similars = SmartSimilarity.similars(t, :increment_counter => true).join("|")
-            case ActiveRecord::Base.connection.adapter_name
-            when 'PostgreSQL'
-              "search_tags ~* '#{similars}'"
-            else
-              "search_tags REGEXP '#{similars}'"
-            end
-          end
-
-        else
-          tags.map! {|t| "search_tags LIKE '%#{t}%'"}
-        end
 
         # Load ranking from Search tags
         result_ids = []
         result_scores = {}
 
-        group_method = case ActiveRecord::Base.connection.adapter_name
-        when 'PostgreSQL'
-          "array_agg"
-        else
-          "group_concat"
-        end
-
-
-        SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, #{group_method}(search_tags) as grouped_tags
+        SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, #{adapater_based_group_method}(search_tags) as grouped_tags
         from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
         (#{tags.join(' OR ')}) group by entry_id order by score DESC").each do |r|
         result_ids << r["entry_id"].to_i
         result_scores[r["entry_id"].to_i] = r['score'].to_f
       end
 
-      # Enable unscoped searching
-      if options[:unscoped] == true
-        results     =  self.unscoped.where(self.primary_key => result_ids)
-      else
-        results     =  self.where(self.primary_key => result_ids)
-      end
+      results     =  self.where(self.primary_key => result_ids)
 
       if options[:conditions]
         results = results.where(options[:conditions])
@@ -154,50 +122,132 @@ module SmartSearch
     else
       raise "#{self.inspect} is not a SmartSearch"
     end
-  end
 
-  # reload search_tags for entire table based on the attributes defined in ':on' option passed to the 'smart_search' method
-  def set_search_index
-    s = self.all.size.to_f
-    self.all.each_with_index do |a, i|
-      a.create_search_tags
-      done = ((i+1).to_f/s)*100
+    def find_by_splitted_tags(search_fields = {})
+      sanitized_search_fields = {}
+      search_fields.each do |field, tags|
+        sanitized_search_fields[field] = map_similarity_tags(tags)
+      end
+
+
+      # Load ranking from Search tags
+      result_ids = []
+      result_scores = {}
+
+      SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, #{adapater_based_group_method}(search_tags) as grouped_tags
+      from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
+      (#{tags.join(' OR ')}) group by entry_id order by score DESC").each do |r|
+      result_ids << r["entry_id"].to_i
+      result_scores[r["entry_id"].to_i] = r['score'].to_f
+
+      self.where(self.primary_key => result_ids)
     end
+
+    # reload search_tags for entire table based on the attributes defined in ':on' option passed to the 'smart_search' method
+    def set_search_index
+      s = self.all.size.to_f
+      self.all.each_with_index do |a, i|
+        a.create_search_tags
+        done = ((i+1).to_f/s)*100
+      end
+    end
+
+    # Load all search tags for this table into similarity index
+    def set_similarity_index
+      search_tags_list = self.connection.select_all("SELECT search_tags from #{SmartSearchTag.table_name} where `table_name` = #{self.table_name}").map {|r| r["search_tags"]}
+
+      SmartSimilarity.create_from_text(search_tags_list.join(" "))
+    end
+
+    def store_history_and_get_sanitized_search_tags(orig_tags)
+      orig_tags = orig_tags.join(" ") if tags.is_a?(Array)
+      sanitized_tags = orig_tags.gsub(/[\(\)\[\]\'\"\*\%\|\&]/, '').split(/[\ -]/).select {|t| !t.blank?}
+
+      # Save Data for similarity analysis
+      if sanitized_tags.join(' ').size > 3
+        self.connection.execute("INSERT INTO #{::SmartSearchHistory.quoted_table_name} (#{ActiveRecord::Base.connection.quote_column_name('query')}) VALUES ('#{sanitized_tags.gsub(/[^a-zA-ZäöüÖÄÜß\ ]/, '')}');")
+      end
+
+      # Fallback for Empty String
+      sanitized_tags << "#" if sanitized_tags.empty?
+
+      return sanitized_tags
+    end
+
+    def map_similarity_tags(tags)
+      # Similarity
+      if self.enable_similarity == true
+        tags.map do |t|
+          similars = SmartSimilarity.similars(t, :increment_counter => true).join("|")
+          case ActiveRecord::Base.connection.adapter_name
+          when 'PostgreSQL'
+            "search_tags ~* '#{similars}'"
+          else
+            "search_tags REGEXP '#{similars}'"
+          end
+        end
+
+      else
+        tags.map {|t| "search_tags LIKE '%#{t}%'"}
+      end
+    end
+
+    def adapater_based_group_method
+      case ActiveRecord::Base.connection.adapter_name
+      when 'PostgreSQL'
+        "array_agg"
+      else
+        "group_concat"
+      end
+    end
+
   end
 
-  # Load all search tags for this table into similarity index
-  def set_similarity_index
-    search_tags_list = self.connection.select_all("SELECT search_tags from #{SmartSearchTag.table_name} where `table_name` = #{self.table_name}").map {|r| r["search_tags"]}
+  # Instance Methods for ActiveRecord
+  module InstanceMethods
 
-    SmartSimilarity.create_from_text(search_tags_list.join(" "))
-  end
+    # Load the result template path for this instance
+    def result_template_path
+      self.class.result_template_path
+    end
 
-end
+    def dont_update_search_tags!
+      self.dont_update_search_tags = true
+    end
 
-# Instance Methods for ActiveRecord
-module InstanceMethods
+    def update_search_tags?
+      !self.dont_update_search_tags
+    end
 
-  # Load the result template path for this instance
-  def result_template_path
-    self.class.result_template_path
-  end
+    # create search tags for this very record based on the attributes defined in ':on' option passed to the 'Class.smart_search' method
+    def create_search_tags
+      # storing tags must never fail the systems
+      begin
 
-  def dont_update_search_tags!
-    self.dont_update_search_tags = true
-  end
+        self.get_calculated_tags_list!
+        self.clear_search_tags
 
-  def update_search_tags?
-    !self.dont_update_search_tags
-  end
+        (self.class.split_searchable_fields ? @calculated_tags_list : get_merged_calculated_tags).each do |t|
+          if !t[:search_tags].blank? && t[:search_tags].size > 1
+            begin
+              SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id, :search_tags => t[:search_tags].strip.split(" ").uniq.join(" ")))
+            rescue Exception => e
 
-  # create search tags for this very record based on the attributes defined in ':on' option passed to the 'Class.smart_search' method
-  def create_search_tags
-    # storing tags must never fail the systems
-    begin
+            end
+          end
+        end
+
+      rescue Exception => e
+        Rails.logger.error "SMART SEARCH FAILED TO TO STORE SEARCH TAGS #{self.class.name} #{self.id}"
+        Rails.logger.error e.message
+        Rails.logger.error puts e.backtrace
+      end
+    end
+
+    def get_calculated_tags_list!
       tags      = []
 
       self.class.tags.each do |tag|
-
         if !tag.is_a?(Hash)
           tag = {:field_name => tag, :boost => 1, :search_tags => ""}
         else
@@ -220,74 +270,54 @@ module InstanceMethods
         tags << tag
       end
 
+      return @calculated_tags_list = tags
+    end
 
-      self.clear_search_tags
-
+    def get_merged_calculated_tags
       # Merge search tags with same boost
-      @merged_tags = {}
+      merged_tags = {}
 
-      tags.each do |t|
+      @calculated_tags_list.each do |t|
         boost = t[:boost]
 
-        if @merged_tags[boost]
-
-          @merged_tags[boost][:field_name] << ",#{t[:field_name]}"
-          @merged_tags[boost][:search_tags] << " #{t[:search_tags]}"
+        if merged_tags[boost]
+          merged_tags[boost][:field_name] << ",#{t[:field_name]}"
+          merged_tags[boost][:search_tags] << " #{t[:search_tags]}"
         else
-          @merged_tags[boost] = {:field_name => "#{t[:field_name]}", :search_tags => t[:search_tags], :boost => boost }
-        end
-
-      end
-
-      @merged_tags.values.each do |t|
-        if !t[:search_tags].blank? && t[:search_tags].size > 1
-          begin
-            SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id, :search_tags => t[:search_tags].strip.split(" ").uniq.join(" ")))
-          rescue Exception => e
-
-          end
+          merged_tags[boost] = {:field_name => "#{t[:field_name]}", :search_tags => t[:search_tags], :boost => boost }
         end
       end
 
-    rescue Exception => e
-      Rails.logger.error "SMART SEARCH FAILED TO TO STORE SEARCH TAGS #{self.class.name} #{self.id}"
-      Rails.logger.error e.message
-      Rails.logger.error puts e.backtrace
+      return merged_tags.values
     end
 
-
-
-
-
-  end
-
-  # Remove search data for the instance from the index
-  def clear_search_tags
-    if !self.id.nil?
-      SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}") rescue nil
+    # Remove search data for the instance from the index
+    def clear_search_tags
+      if !self.id.nil?
+        SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}") rescue nil
+      end
     end
+
   end
 
-end
 
+  class Config
 
-class Config
+    cattr_accessor  :search_models
+    cattr_accessor  :public_models
 
-  cattr_accessor  :search_models
-  cattr_accessor  :public_models
+    self.search_models = []
+    self.public_models = []
 
-  self.search_models = []
-  self.public_models = []
+    def self.get_search_models
+      self.search_models.map {|m| m.constantize}
+    end
 
-  def self.get_search_models
-    self.search_models.map {|m| m.constantize}
+    def self.get_public_models
+      self.public_models.map {|m| m.constantize}
+    end
+
   end
-
-  def self.get_public_models
-    self.public_models.map {|m| m.constantize}
-  end
-
-end
 
 
 end
