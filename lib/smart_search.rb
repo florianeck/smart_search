@@ -49,12 +49,12 @@ module SmartSearch
           self.order_default = options[:order]
 
           self.tags = options[:on] || []
-        elsif is_smart_search?
+        elsif is_smart_search? && Rails.env.production?
           # Allow re-adding attributes for search
           logger.info("Re-Adding search data on #{self.name}: #{options[:on].inspect}".yellow)
           self.tags += options[:on]
         end
-          
+
       end
     end
 
@@ -93,7 +93,7 @@ module SmartSearch
               "search_tags ~* '#{similars}'"
             else
               "search_tags REGEXP '#{similars}'"
-            end  
+            end
           end
 
         else
@@ -103,15 +103,15 @@ module SmartSearch
         # Load ranking from Search tags
         result_ids = []
         result_scores = {}
-        
+
         group_method = case ActiveRecord::Base.connection.adapter_name
         when 'PostgreSQL'
           "array_agg"
         else
           "group_concat"
         end
-        
-        
+
+
         SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, #{group_method}(search_tags) as grouped_tags
         from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
         (#{tags.join(' OR ')}) group by entry_id order by score DESC").each do |r|
@@ -195,7 +195,7 @@ module InstanceMethods
     # storing tags must never fail the systems
     begin
       tags      = []
-         
+
       self.class.tags.each do |tag|
 
         if !tag.is_a?(Hash)
@@ -244,20 +244,20 @@ module InstanceMethods
           begin
             SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id, :search_tags => t[:search_tags].strip.split(" ").uniq.join(" ")))
           rescue Exception => e
-            
+
           end
         end
       end
-        
+
     rescue Exception => e
       Rails.logger.error "SMART SEARCH FAILED TO TO STORE SEARCH TAGS #{self.class.name} #{self.id}"
       Rails.logger.error e.message
       Rails.logger.error puts e.backtrace
     end
-      
-      
 
-      
+
+
+
 
   end
 
