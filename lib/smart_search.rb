@@ -1,4 +1,3 @@
-# -*- encoding : utf-8 -*-
 require "rails"
 
 require "smart_search"
@@ -7,7 +6,6 @@ require "smart_search/engine"
 require "smart_similarity"
 require "smart_search_history"
 require "smart_search_tag"
-
 
 module SmartSearch
 
@@ -60,6 +58,8 @@ module SmartSearch
       result_ids = []
       result_scores = {}
 
+      results = SmartSearchTag.select("entry_id, sum(boost) as score").group(:entry_id).where(table_name: self.table_name)
+
       SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, #{adapater_based_group_method}(search_tags) as grouped_tags
       from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
       (#{tags.join(' OR ')}) group by entry_id order by score DESC").each do |r|
@@ -78,18 +78,13 @@ module SmartSearch
         )
       end
 
-      binding.pry
-      # Load ranking from Search tags
-      result_ids = []
-      result_scores = {}
-
-      SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, #{adapater_based_group_method}(search_tags) as grouped_tags
-      from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
-      (#{tags.join(' OR ')}) group by entry_id order by score DESC").each do |r|
-        result_ids << r["entry_id"].to_i
-        result_scores[r["entry_id"].to_i] = r['score'].to_f
+      result_list = []
+      sanitized_search_fields.each do |field_name, query|
+        result_list << SmartSearchTag.where(table_name: self.table_name, field_name: field_name)
+          .where(query).pluck(:entry_id)
       end
 
+      result_ids = result_ids.map(&:to_s).join(" & ")
       self.where(self.primary_key => result_ids)
     end
 
@@ -139,9 +134,8 @@ module SmartSearch
       end
     end
 
-
     # Public Mainenance Helper Methods
-    # public
+    public
 
     # reload search_tags for entire table based on the attributes defined in ':on' option passed to the 'smart_search' method
     def set_search_index

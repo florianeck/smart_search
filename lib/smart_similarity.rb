@@ -16,7 +16,7 @@ class SmartSimilarity < ActiveRecord::Base
 
       #== Konstanten
           # Defines the min. result of word simililarity check
-          SIMILARITY_FACTOR = 0.83
+          SIMILARITY_FACTOR = 0.81
           # Defines first simililarity check method
           SIMILARITY_METHOD_1 = :jarowinkler
           # Defines first simililarity check method
@@ -73,8 +73,8 @@ class SmartSimilarity < ActiveRecord::Base
 
     # Add one simgle word to database and check if there are already similars
     def self.add_word(word)
-      words = [word]
-      phrases = self.connection.select_all("SELECT phrase from smart_search_similarities").map {|r| r["phrase"] }
+      words = [word.downcase]
+      phrases = self.pluck(:phrase)
       words +=  phrases.select {|p| self.match_words(p,word) >= SIMILARITY_FACTOR && (word.size - p.size).abs < 2 }
 
       self.create_from_text(words.map(&:downcase).join(" "))
@@ -82,10 +82,9 @@ class SmartSimilarity < ActiveRecord::Base
 
     # Loads your created query history and saves them to the index
     def self.load_from_query_history
-      queries = ActiveRecord::Base.connection.select_all("SELECT query from `#{::SmartSearchHistory.table_name}`").map {|r| r["query"]}
+      queries = SmartSearchHistory.pluck(:query)
       queries.each {|q| self.add_word(q) }
-
-      self.connection.execute("TRUNCATE `#{::SmartSearchHistory.table_name}`")
+      self.connection.execute("TRUNCATE #{::SmartSearchHistory.quoted_table_name}")
     end
 
     # Get array of similar words including orig word
@@ -94,15 +93,15 @@ class SmartSimilarity < ActiveRecord::Base
       if list.nil?
         return [word].map(&:downcase)
       else
-        self.connection.execute("UPDATE `smart_search_similarities` SET `count` = #{list.count+1} where `smart_search_similarities`.`phrase` = '#{list.phrase}'")
+        self.connection.execute("UPDATE #{self.quoted_table_name} SET count = #{list.count+1} where #{self.quoted_table_name}.phrase = '#{list.phrase}'")
         return [word, list.similarities].flatten.map(&:downcase)
       end
     end
 
     # Return match score for two words bases und the two defined similarity methods
     def self.match_words(word1, word2)
-      x1 = word1.send("#{SIMILARITY_METHOD_1}_similar", word2)
-      x2 = word1.send("#{SIMILARITY_METHOD_2}_similar", word2)
+      x1 = word1.downcase.send("#{SIMILARITY_METHOD_1}_similar", word2.downcase)
+      x2 = word1.downcase.send("#{SIMILARITY_METHOD_2}_similar", word2.downcase)
       return (x1+x2)/2.0
     end
 
