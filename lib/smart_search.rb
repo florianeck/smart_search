@@ -73,6 +73,7 @@ module SmartSearch
     def find_by_splitted_tags(search_fields = {})
       sanitized_search_fields = {}
       search_fields.each do |field, tags|
+        next if tags.blank?
         sanitized_search_fields[field] = map_similarity_tags(
           store_history_and_get_sanitized_search_tags(tags)
         )
@@ -80,11 +81,12 @@ module SmartSearch
 
       result_list = []
       sanitized_search_fields.each do |field_name, query|
+        next if query == '#' # skip blank queries
         result_list << SmartSearchTag.where(table_name: self.table_name, field_name: field_name)
           .where(query).pluck(:entry_id)
       end
 
-      result_ids = result_ids.map(&:to_s).join(" & ")
+      result_ids = eval(result_list.map(&:to_s).join(" & "))
       self.where(self.primary_key => result_ids)
     end
 
