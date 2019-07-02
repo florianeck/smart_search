@@ -101,7 +101,9 @@ module SmartSearch
 
       # Save Data for similarity analysis
       if sanitized_tags.join(' ').size > 3
-        self.connection.execute("INSERT INTO #{::SmartSearchHistory.quoted_table_name} (#{ActiveRecord::Base.connection.quote_column_name('query')}) VALUES ('#{sanitized_tags.gsub(/[^a-zA-ZäöüÖÄÜß\ ]/, '')}');")
+        ::SmartSearchHistory.create(
+          query: sanitized_tags.join(' ').gsub(/[^a-zA-ZäöüÖÄÜß\ ]/, '')
+        )
       end
 
       # Fallback for Empty String
@@ -152,8 +154,9 @@ module SmartSearch
 
     # Load all search tags for this table into similarity index
     def set_similarity_index
-      search_tags_list = self.connection.select_all("SELECT search_tags from #{SmartSearchTag.table_name} where `table_name` = #{self.table_name}").map {|r| r["search_tags"]}
-      SmartSimilarity.create_from_text(search_tags_list.join(" "))
+      SmartSimilarity.create_from_text(
+        SmartSearchTag.where(table_name: self.table_name).pluck(:search_tags).join(' ')
+      )
     end
 
   end
