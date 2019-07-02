@@ -67,7 +67,7 @@ class SmartSimilarity < ActiveRecord::Base
       list.each do |word, sims|
         sims = sims.sort_by {|s| self.match_words(s,word) }.reverse.first(SIMILARITY_LIMIT)
 
-        self.connection.execute 'UPDATE %s set similarities = "%s" where phrase = "%s"' % [self.table_name, sims.to_yaml, word] rescue nil
+        SmartSimilarity.connection.execute "UPDATE #{SmartSimilarity.quoted_table_name} set similarities = '#{sims.to_yaml}' where phrase = '#{word}'"
       end
     end
 
