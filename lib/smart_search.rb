@@ -29,7 +29,7 @@ module SmartSearch
 
           send :include, InstanceMethods
           self.send(:after_commit, :create_search_tags, :if => :update_search_tags?) unless options[:auto] == false
-          self.send(:before_destroy, :clear_search_tags)
+          self.send(:after_destroy, :clear_search_tags)
           self.enable_similarity ||= true
 
           attr_accessor :query_score, :dont_update_search_tags
@@ -62,7 +62,7 @@ module SmartSearch
 
       SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, #{adapater_based_group_method}(search_tags) as grouped_tags
       from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
-      (#{tags.join(' OR ')}) group by entry_id order by score DESC").each do |r|
+      (#{tags.join(' AND ')}) group by entry_id order by score DESC").each do |r|
         result_ids << r["entry_id"].to_i
         result_scores[r["entry_id"].to_i] = r['score'].to_f
       end
