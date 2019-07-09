@@ -247,7 +247,7 @@ module SmartSearch
 
     # Remove search data for the instance from the index
     def clear_search_tags
-      SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where `table_name` = '#{self.class.table_name}' and entry_id = #{self.id}") rescue nil
+      SmartSearchTag.connection.execute("DELETE from #{SmartSearchTag.table_name} where table_name = '#{self.class.table_name}' and entry_id = #{self.id}") rescue nil
     end
   end
 
