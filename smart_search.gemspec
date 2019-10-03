@@ -13,4 +13,5 @@ Gem::Specification.new do |s|
   s.add_dependency "amatch"
   s.add_dependency "friendly_extensions"
   s.add_dependency "unicode-emoji"
+  s.add_dependency "ruby-progressbar"
 end
