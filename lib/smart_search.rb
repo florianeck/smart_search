@@ -141,15 +141,10 @@ module SmartSearch
 
     # reload search_tags for entire table based on the attributes defined in ':on' option passed to the 'smart_search' method
     def set_search_index
-      bar = ProgressBar.create(
-        :title => "Setting index for: #{self.name}",
-        :total => self.all.size.to_f,
-        format: "%t: (%c/%C) |%W| %f"
-      )
+      threads = [(%x(nproc).strip.to_i)-2, 2].max
 
-      self.all.each_with_index do |a, i|
+      Parallel.each(self.all, in_processes: threads, progress: "Setting index for: #{self.name}" , progress_options: { format: "%t: (%c/%C) |%W| %f" }) do |a|
         a.create_search_tags
-        bar.increment
       end
     end
 
