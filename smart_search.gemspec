@@ -14,5 +14,5 @@ Gem::Specification.new do |s|
   s.add_dependency "friendly_extensions"
   s.add_dependency "unicode-emoji"
   s.add_dependency "ruby-progressbar"
-  s.add_dependenc  "parallel"
+  s.add_dependency  "parallel"
 end
