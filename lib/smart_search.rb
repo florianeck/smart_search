@@ -80,10 +80,11 @@ module SmartSearch
       end
 
       result_list = []
+
       sanitized_search_fields.each do |field_name, query|
         next if query == '#' # skip blank queries
         result_list << SmartSearchTag.where(table_name: self.table_name, field_name: field_name)
-          .where(query).pluck(:entry_id)
+          .where(query.join(' AND ')).pluck(:entry_id)
       end
 
       result_ids = eval(result_list.map(&:to_s).join(" & "))
