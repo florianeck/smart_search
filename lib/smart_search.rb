@@ -60,9 +60,21 @@ module SmartSearch
 
       results = SmartSearchTag.select("entry_id, sum(boost) as score").group(:entry_id).where(table_name: self.table_name)
 
-      SmartSearchTag.connection.select_all("select entry_id, sum(boost) as score, #{adapater_based_group_method}(search_tags) as grouped_tags
-      from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
-      (#{tags.join(' AND ')}) group by entry_id order by score DESC").each do |r|
+      query = case ActiveRecord::Base.connection.adapter_name
+          when 'PostgreSQL'
+            "select entry_id, sum(boost) as score
+                  from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}'
+                  group by entry_id
+                  HAVING (#{tags.join(' AND ')})
+                  order by score DESC"
+          else
+            "select entry_id, sum(boost) as score, #{adapater_based_group_method}(search_tags) as grouped_tags
+                  from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
+                  (#{tags.join(' AND ')}) group by entry_id order by score DESC"
+          end
+
+
+      SmartSearchTag.connection.select_all(query).each do |r|
         result_ids << r["entry_id"].to_i
         result_scores[r["entry_id"].to_i] = r['score'].to_f
       end
@@ -84,7 +96,7 @@ module SmartSearch
       sanitized_search_fields.each do |field_name, query|
         next if query == '#' # skip blank queries
         result_list << SmartSearchTag.where(table_name: self.table_name, field_name: field_name)
-          .where(query.join(' AND ')).pluck(:entry_id)
+          .having(query.join(' AND ')).group(:entry_id).pluck(:entry_id)
       end
 
       result_ids = eval(result_list.map(&:to_s).join(" & "))
@@ -117,7 +129,7 @@ module SmartSearch
           similars = SmartSimilarity.similars(t, :increment_counter => true).join("|")
           case ActiveRecord::Base.connection.adapter_name
           when 'PostgreSQL'
-            "search_tags ~* '#{similars}'"
+            "string_agg(search_tags, ' ') ~* '#{similars}'"
           else
             "search_tags REGEXP '#{similars}'"
           end
