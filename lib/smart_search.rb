@@ -18,6 +18,9 @@ module SmartSearch
     # Enable SmartSearch for the current ActiveRecord model.
     def smart_search(options = {:on => [], :split => false})
       if table_exists?
+        if SmartSearch::Config.search_models.index(self.name).nil?
+          SmartSearch::Config.search_models << self.name
+        end
         # Check if search_tags exists
         if !is_smart_search?
 
@@ -281,6 +284,30 @@ module SmartSearch
 
     def self.get_public_models
       self.public_models.map {|m| m.constantize}
+    end
+
+    def self.rebuild_index
+      puts "Rebuilding Search index..."
+
+      SmartSearch::Config.search_models.each do |name|
+        puts "... #{name}"
+      end
+
+      ActiveRecord::Base.logger = nil
+
+      model_bar = ProgressBar.create(:title => "Building models", :total => SmartSearch::Config.search_models.size, format: "%t: (%c/%C) |%W| %f")
+
+      SmartSearch::Config.get_search_models.each do |model|
+        puts model.tags.join("\n")
+        entry_bar = ProgressBar.create(:title => model.name, :total => model.all.size, format: "%t: (%c/%C) |%W| %f")
+        model.all.each do |entry|
+          entry.create_search_tags
+          entry_bar.increment
+        end
+
+        model_bar.increment
+        puts "\n\n"
+      end
     end
   end
 
