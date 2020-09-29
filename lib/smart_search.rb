@@ -35,7 +35,7 @@ module SmartSearch
           attr_accessor :query_score, :dont_update_search_tags
 
           self.tags = options[:on] || []
-        elsif is_smart_search? && Rails.env.production?
+        elsif is_smart_search?
           # Allow re-adding attributes for search
           logger.info("Re-Adding search data on #{self.name}: #{options[:on].inspect}".yellow)
           self.tags += options[:on]
@@ -80,6 +80,9 @@ module SmartSearch
       end
 
       results     =  self.where(self.primary_key => result_ids)
+
+      results = result.offset(options[:offset]) if options[:offset]
+      results = result.limit(options[:limit]) if options[:per_page]
     end
 
     def find_by_splitted_tags(search_fields = {})
