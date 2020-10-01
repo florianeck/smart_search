@@ -61,7 +61,7 @@ module SmartSearch
       result_ids = []
       result_scores = {}
 
-      results = SmartSearchTag.select("entry_id, sum(boost) as score").group(:entry_id).where(table_name: self.table_name)
+      #results = SmartSearchTag.select("entry_id, sum(boost) as score").group(:entry_id).where(table_name: self.table_name)
 
       query = case ActiveRecord::Base.connection.adapter_name
           when 'PostgreSQL'
@@ -84,8 +84,10 @@ module SmartSearch
 
       results     =  self.where(self.primary_key => result_ids)
 
-      results = result.offset(options[:offset]) if options[:offset]
-      results = result.limit(options[:limit]) if options[:per_page]
+      results = results.offset(options[:offset]) if options[:offset]
+      results = results.limit(options[:limit]) if options[:per_page]
+
+      return results
     end
 
     def find_by_splitted_tags(search_fields = {})
