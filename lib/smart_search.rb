@@ -57,35 +57,37 @@ module SmartSearch
       tags = store_history_and_get_sanitized_search_tags(tags)
       tags = map_similarity_tags(tags)
 
-      # Load ranking from Search tags
       result_ids = []
-      result_scores = {}
 
       #results = SmartSearchTag.select("entry_id, sum(boost) as score").group(:entry_id).where(table_name: self.table_name)
 
       query = case ActiveRecord::Base.connection.adapter_name
           when 'PostgreSQL'
-            "select entry_id, sum(boost) as score
+            "select entry_id #{SmartSearch::Config.order_by_score ? ', sum(boost) as score' : ''}
                   from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}'
-                  group by entry_id
+                  GROUP BY entry_id
                   HAVING (#{tags.join(' AND ')})
-                  order by score DESC"
+                  #{SmartSearch::Config.order_by_score ? 'ORDER BY score DESC' : ''}"
+
           else
-            "select entry_id, sum(boost) as score, #{adapater_based_group_method}(search_tags) as grouped_tags
-                  from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
-                  (#{tags.join(' AND ')}) group by entry_id order by score DESC"
+            "select entry_id #{SmartSearch::Config.order_by_score ? ', sum(boost) as score' : ''}, #{adapater_based_group_method}(search_tags) as grouped_tags
+                  FROM smart_search_tags
+                  WHERE #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
+                  (#{tags.join(' AND ')})
+                  GROUP BY entry_id
+                  #{SmartSearch::Config.order_by_score ? 'ORDER BY score DESC' : ''}"
           end
 
 
       SmartSearchTag.connection.select_all(query).each do |r|
         result_ids << r["entry_id"].to_i
-        result_scores[r["entry_id"].to_i] = r['score'].to_f
       end
 
       results     =  self.where(self.primary_key => result_ids)
 
       results = results.offset(options[:offset]) if options[:offset]
       results = results.limit(options[:limit]) if options[:per_page]
+      results = results.reorder(self.order_default) if self.order_default
 
       return results
     end
@@ -276,9 +278,11 @@ module SmartSearch
 
     cattr_accessor  :search_models
     cattr_accessor  :public_models
+    cattr_accessor  :order_by_score
 
     self.search_models = []
     self.public_models = []
+    self.order_by_score = true
 
     def self.get_search_models
       self.search_models.map {|m| m.constantize}
