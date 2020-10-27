@@ -105,7 +105,7 @@ module SmartSearch
 
 
       results = results.offset(options[:offset]) if options[:offset]
-      results = results.limit(options[:limit]) if options[:per_page]
+      results = results.limit(options[:per_page]) if options[:per_page]
 
       return results
     end
