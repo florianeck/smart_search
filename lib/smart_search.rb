@@ -57,37 +57,55 @@ module SmartSearch
       tags = store_history_and_get_sanitized_search_tags(tags)
       tags = map_similarity_tags(tags)
 
-      result_ids = []
+      base_select = "#{self.quoted_table_name}.* #{SmartSearch::Config.order_by_score ? ', SUM(boost) AS score' : ''}"
 
-      #results = SmartSearchTag.select("entry_id, sum(boost) as score").group(:entry_id).where(table_name: self.table_name)
+      join_query = "LEFT JOIN #{SmartSearchTag.quoted_table_name}
+        ON #{SmartSearchTag.quoted_table_name}.#{ActiveRecord::Base.connection.quote_column_name('table_name')} = '#{self.table_name}'
+        AND #{SmartSearchTag.quoted_table_name}.#{ActiveRecord::Base.connection.quote_column_name('entry_id')} = #{self.primary_key}"
 
-      query = case ActiveRecord::Base.connection.adapter_name
-          when 'PostgreSQL'
-            "select entry_id #{SmartSearch::Config.order_by_score ? ', sum(boost) as score' : ''}
-                  from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}'
-                  GROUP BY entry_id
-                  HAVING (#{tags.join(' AND ')})
-                  #{SmartSearch::Config.order_by_score ? 'ORDER BY score DESC' : ''}"
+      group_clause = "#{self.quoted_table_name}.#{self.primary_key}, #{SmartSearchTag.column_names.map {|c| SmartSearchTag.quoted_table_name + '.' + c }.join(", ") }"
 
-          else
-            "select entry_id #{SmartSearch::Config.order_by_score ? ', sum(boost) as score' : ''}, #{adapater_based_group_method}(search_tags) as grouped_tags
-                  FROM smart_search_tags
-                  WHERE #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
-                  (#{tags.join(' AND ')})
-                  GROUP BY entry_id
-                  #{SmartSearch::Config.order_by_score ? 'ORDER BY score DESC' : ''}"
-          end
-
-
-      SmartSearchTag.connection.select_all(query).each do |r|
-        result_ids << r["entry_id"].to_i
+      order_clause =  if self.order_default
+        "#{self.order_default}"
+      elsif SmartSearch::Config.order_by_score
+        "score DESC"
       end
 
-      results     =  self.where(self.primary_key => result_ids)
+      results = case ActiveRecord::Base.connection.adapter_name
+      when 'PostgreSQL'
+
+        self.select(base_select)
+          .joins(join_query)
+          .group(group_clause)
+          .having("#{tags.join(' AND ')}")
+      else
+        [base_select, group_clause, "HAVING (#{tags.join(' AND ')})", order_clause].join(" ")
+      end
+
+
+      # query = case ActiveRecord::Base.connection.adapter_name
+#           when 'PostgreSQL'
+#             "select entry_id #{SmartSearch::Config.order_by_score ? ', sum(boost) as score' : ''}
+#                   from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}'
+#                   GROUP BY entry_id
+#                   HAVING (#{tags.join(' AND ')})
+#                   #{SmartSearch::Config.order_by_score ? 'ORDER BY score DESC' : ''}"
+#
+#           else
+#             "select entry_id #{SmartSearch::Config.order_by_score ? ', sum(boost) as score' : ''}, #{adapater_based_group_method}(search_tags) as grouped_tags
+#                   FROM smart_search_tags
+#                   WHERE #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
+#                   (#{tags.join(' AND ')})
+#                   GROUP BY entry_id
+#                   #{SmartSearch::Config.order_by_score ? 'ORDER BY score DESC' : ''}"
+#           end
+
+
+
+
 
       results = results.offset(options[:offset]) if options[:offset]
       results = results.limit(options[:limit]) if options[:per_page]
-      results = results.reorder(self.order_default) if self.order_default
 
       return results
     end
