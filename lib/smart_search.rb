@@ -61,7 +61,7 @@ module SmartSearch
 
       join_query = "LEFT JOIN #{SmartSearchTag.quoted_table_name}
         ON #{SmartSearchTag.quoted_table_name}.#{ActiveRecord::Base.connection.quote_column_name('table_name')} = '#{self.table_name}'
-        AND #{SmartSearchTag.quoted_table_name}.#{ActiveRecord::Base.connection.quote_column_name('entry_id')} = #{self.primary_key}"
+        AND #{SmartSearchTag.quoted_table_name}.#{ActiveRecord::Base.connection.quote_column_name('entry_id')} = #{self.quoted_table_name}.#{self.primary_key}"
 
       group_clause = "#{self.quoted_table_name}.#{self.primary_key}, #{SmartSearchTag.column_names.map {|c| SmartSearchTag.quoted_table_name + '.' + c }.join(", ") }"
 
