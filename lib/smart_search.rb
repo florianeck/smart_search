@@ -17,32 +17,36 @@ module SmartSearch
   module ClassMethods
     # Enable SmartSearch for the current ActiveRecord model.
     def smart_search(options = {:on => [], :split => false})
-      if table_exists?
-        if SmartSearch::Config.search_models.index(self.name).nil?
-          SmartSearch::Config.search_models << self.name
+      begin
+        if table_exists?
+          if SmartSearch::Config.search_models.index(self.name).nil?
+            SmartSearch::Config.search_models << self.name
+          end
+          # Check if search_tags exists
+          if !is_smart_search?
+
+            cattr_accessor :condition_default, :group_default, :tags, :order_default, :enable_similarity, :default_template_path
+
+            # BETA!
+            cattr_accessor :split_searchable_fields
+            self.split_searchable_fields = options[:split]
+
+            send :include, InstanceMethods
+            self.send(:after_commit, :create_search_tags, :if => :update_search_tags?) unless options[:auto] == false
+            self.send(:after_destroy, :clear_search_tags)
+            self.enable_similarity ||= true
+
+            attr_accessor :query_score, :dont_update_search_tags
+
+            self.tags = options[:on] || []
+          elsif is_smart_search?
+            # Allow re-adding attributes for search
+            logger.info("Re-Adding search data on #{self.name}: #{options[:on].inspect}".yellow)
+            self.tags += options[:on]
+          end
         end
-        # Check if search_tags exists
-        if !is_smart_search?
-
-          cattr_accessor :condition_default, :group_default, :tags, :order_default, :enable_similarity, :default_template_path
-
-          # BETA!
-          cattr_accessor :split_searchable_fields
-          self.split_searchable_fields = options[:split]
-
-          send :include, InstanceMethods
-          self.send(:after_commit, :create_search_tags, :if => :update_search_tags?) unless options[:auto] == false
-          self.send(:after_destroy, :clear_search_tags)
-          self.enable_similarity ||= true
-
-          attr_accessor :query_score, :dont_update_search_tags
-
-          self.tags = options[:on] || []
-        elsif is_smart_search?
-          # Allow re-adding attributes for search
-          logger.info("Re-Adding search data on #{self.name}: #{options[:on].inspect}".yellow)
-          self.tags += options[:on]
-        end
+      rescue ActiveRecord::NoDatabaseError => e
+        puts "Could not set up smart_search due to missing database"
       end
     end
 
@@ -79,29 +83,11 @@ module SmartSearch
           .group(group_clause)
           .having("#{tags.join(' AND ')}")
       else
-        [base_select, group_clause, "HAVING (#{tags.join(' AND ')})", order_clause].join(" ")
+        self.select(base_select)
+          .joins(join_query)
+          .group(group_clause)
+          .having("#{tags.join(' AND ')}")
       end
-
-
-      # query = case ActiveRecord::Base.connection.adapter_name
-#           when 'PostgreSQL'
-#             "select entry_id #{SmartSearch::Config.order_by_score ? ', sum(boost) as score' : ''}
-#                   from smart_search_tags where #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}'
-#                   GROUP BY entry_id
-#                   HAVING (#{tags.join(' AND ')})
-#                   #{SmartSearch::Config.order_by_score ? 'ORDER BY score DESC' : ''}"
-#
-#           else
-#             "select entry_id #{SmartSearch::Config.order_by_score ? ', sum(boost) as score' : ''}, #{adapater_based_group_method}(search_tags) as grouped_tags
-#                   FROM smart_search_tags
-#                   WHERE #{ActiveRecord::Base.connection.quote_column_name('table_name')}= '#{self.table_name}' and
-#                   (#{tags.join(' AND ')})
-#                   GROUP BY entry_id
-#                   #{SmartSearch::Config.order_by_score ? 'ORDER BY score DESC' : ''}"
-#           end
-
-
-
 
 
       results = results.offset(options[:offset]) if options[:offset]
