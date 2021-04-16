@@ -121,7 +121,7 @@ module SmartSearch
     private
     def store_history_and_get_sanitized_search_tags(orig_tags)
       orig_tags = orig_tags.join(" ") if orig_tags.is_a?(Array)
-      sanitized_tags = orig_tags.gsub(/[\(\)\[\]\'\"\*\%\|\&]/, '').split(/[\ -]/).select {|t| !t.blank?}
+      sanitized_tags = orig_tags.gsub(/[\(\)\[\]\'\"\*\%\|\&\+\.\$]/, '').split(/[\ -]/).select {|t| !t.blank?}
 
       # Save Data for similarity analysis
       if sanitized_tags.join(' ').size > 3
