@@ -56,7 +56,7 @@ module SmartSearch
     end
 
     # Serach database for given search tags
-    def find_by_tags(tags = "", options = {})
+    def find_by_tags(tags = "", options = {}, &block)
 
       tags = store_history_and_get_sanitized_search_tags(tags)
       tags = map_similarity_tags(tags)
@@ -89,6 +89,13 @@ module SmartSearch
           .having("#{tags.join(' AND ')}")
       end
 
+      if options[:distinct] == true
+        results = results.distinct
+      end
+
+      if block_given?
+        results = yield(results)
+      end
 
       results = results.offset(options[:offset]) if options[:offset]
       results = results.limit(options[:per_page]) if options[:per_page]
@@ -96,7 +103,7 @@ module SmartSearch
       return results
     end
 
-    def find_by_splitted_tags(search_fields = {})
+    def find_by_splitted_tags(search_fields = {}, &block)
       sanitized_search_fields = {}
       search_fields.each do |field, tags|
         next if tags.blank?
@@ -114,7 +121,11 @@ module SmartSearch
       end
 
       result_ids = eval(result_list.map(&:to_s).join(" & "))
-      self.where(self.primary_key => result_ids)
+      result = self.where(self.primary_key => result_ids)
+
+      if block_given?
+        result = yield(result)
+      end
     end
 
     # Private Query Helper Methods
