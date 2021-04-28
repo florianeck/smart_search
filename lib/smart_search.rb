@@ -121,10 +121,10 @@ module SmartSearch
       end
 
       result_ids = eval(result_list.map(&:to_s).join(" & "))
-      result = self.where(self.primary_key => result_ids)
+      results = self.where(self.primary_key => result_ids)
 
       if block_given?
-        result = yield(result)
+        results = yield(results)
       end
     end
 
