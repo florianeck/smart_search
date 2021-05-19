@@ -212,21 +212,31 @@ module SmartSearch
     end
 
     # create search tags for this very record based on the attributes defined in ':on' option passed to the 'Class.smart_search' method
-    def create_search_tags
+    def create_search_tags(options = {})
       # storing tags must never fail the systems
       begin
 
         self.get_calculated_tags_list!
         self.clear_search_tags
 
+        data = []
+
         (self.class.split_searchable_fields ? @calculated_tags_list : get_merged_calculated_tags).each do |t|
           if !t[:search_tags].blank? && t[:search_tags].size > 1
-            begin
-              SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id, :search_tags => t[:search_tags].strip.split(" ").uniq.join(" ")))
-            rescue Exception => e
+            if options[:export]
+              data << t.merge!(:table_name => self.class.table_name, :entry_id => self.id, :search_tags => t[:search_tags].strip.split(" ").uniq.join(" "))
+            else
+              begin
+                SmartSearchTag.create(t.merge!(:table_name => self.class.table_name, :entry_id => self.id, :search_tags => t[:search_tags].strip.split(" ").uniq.join(" ")))
+              rescue Exception => e
 
+              end
             end
           end
+        end
+
+        if options[:export]
+          return data
         end
 
       rescue Exception => e
