@@ -30,7 +30,11 @@ module SmartSearch
           send :include, InstanceMethods
           self.send(:after_commit, :create_search_tags, :if => :update_search_tags?) unless options[:auto] == false
           self.send(:after_destroy, :clear_search_tags)
-          self.enable_similarity ||= true
+          if options[:disable_similarity].present?
+            self.enable_similarity = false
+          else
+            self.enable_similarity = true
+          end
 
           attr_accessor :query_score, :dont_update_search_tags
 
