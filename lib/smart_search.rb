@@ -131,7 +131,11 @@ module SmartSearch
           when 'PostgreSQL'
             "string_agg(search_tags, ' ') ~* '#{similars}'"
           else
-            "search_tags REGEXP '#{similars}'"
+            if similars.any?
+              "search_tags REGEXP '#{similars}'"
+            else
+              "search_tags LIKE '%#{t}%'"
+            end
           end
         end
 
