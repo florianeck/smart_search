@@ -155,16 +155,12 @@ module SmartSearch
       # Similarity
       if self.enable_similarity == true
         tags.map do |t|
-          similars = SmartSimilarity.similars(t, :increment_counter => true)
+          similars = SmartSimilarity.similars(t, :increment_counter => true).join("|")
           case ActiveRecord::Base.connection.adapter_name
           when 'PostgreSQL'
-            "string_agg(search_tags, ' ') ~* '#{similars.join("|")}'"
+            "string_agg(search_tags, ' ') ~* '#{similars}'"
           else
-            if similars.any?
-              "search_tags REGEXP '#{similars.join("|")}'"
-            else
-              "search_tags LIKE '%#{t}%'"
-            end
+             "search_tags REGEXP '#{similars}'"
           end
         end
 
