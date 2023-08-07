@@ -17,12 +17,6 @@ class SmartSimilarity < ActiveRecord::Base
       #== Konstanten
           # Defines the min. result of word simililarity check
           SIMILARITY_FACTOR = 0.81
-          # Defines first simililarity check method
-          SIMILARITY_METHOD_1 = :jarowinkler
-          # Defines first simililarity check method
-          SIMILARITY_METHOD_2 = :levenshtein
-
-          # An average of both results will generated and compered with 'SIMILARITY_FACTOR'
 
           # Limit Number of similar words
           SIMILARITY_LIMIT  = 5
@@ -100,8 +94,8 @@ class SmartSimilarity < ActiveRecord::Base
 
     # Return match score for two words bases und the two defined similarity methods
     def self.match_words(word1, word2)
-      x1 = word1.downcase.send("#{SIMILARITY_METHOD_1}_similar", word2.downcase)
-      x2 = word1.downcase.send("#{SIMILARITY_METHOD_2}_similar", word2.downcase)
+      x1 = DidYouMean::JaroWinkler.distance(word1.downcase, word2.downcase)
+      x2 = DidYouMean::Levenshtein.distance(word1.downcase, word2.downcase)
       return (x1+x2)/2.0
     end
 
